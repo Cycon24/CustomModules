@@ -212,56 +212,7 @@ class Compressor(Stage):
         return nc
         
   
-class Compressor_Stage(Stage):
-    def __init__(self, r_tip, r_root, omega, Ca, AssumeConstAxialVel=True, **inputs):
-        self.r = inputs.get('r')
-        self.w = inputs.get('omega')
-        self.Ca = inputs.get('Ca')
-        
-        
-        
-        self.deg_reac = inputs.get('lambda')
-        
-        self.Ca1 = inputs.get('Ca1')
-        self.Ca2 = inputs.get('Ca2')
-        
-        self.C1 = inputs.get('C1')
-        self.C2 = inputs.get('C1')
-        self.Cw1 = inputs.get('Cw1')
-        self.Cw2 = inputs.get('Cw2')
-        
-        self.V1 = inputs.get('V1')
-        self.V2 = inputs.get('V1')
-        self.Vw1 = inputs.get('Vw1')
-        self.Vw2 = inputs.get('Vw2')
-        
-        self.alpha_1 =inputs.get('alpha_1')
-        self.alpha_2 =inputs.get('alpha_2')
-        self.beta_1 =inputs.get('beta_1')
-        self.beta_2 =inputs.get('beta_2')
-        
-        self.deg_reac = inputs.get('lambda')
-        
-        
-    # Velocity Triangle
-    #                    /|\  
-    #                   /β|α\
-    #               V1 /  |  \ C1 
-    #                 /   |   \   
-    #                /    |Ca  \
-    #               /     |     \
-    #              <------|------>
-    #                Vw1     Cw1
-    #              -------------->
-    #                     U 
-    #           /P
-    #          //       Rotor 
-    #          ||       ----> U
-    #          ||
-    #           \
-    
-   
-    
+
     
     
     
@@ -398,12 +349,131 @@ class Nozzle(Stage):
         self.Poe = self.Pe * (1 + (self.gam -1)*(self.Me**2)/2)**(self.gam/(self.gam -1))
        
             
-class Engine():
-    def __init__(self):
-        print(None)
-        # Will use to define and connect all of the stages so the 
-        # outlets of one stage is the inputs for the next stages
+class compressor_rotor():
+    def __init__(self, r_tip, r_root, omega, Ca, AssumeConstAxialVel=True, **inputs):
+        self.r = inputs.get('r')
+        self.w = inputs.get('omega')
+        self.Ca = inputs.get('Ca')
         
+        
+        
+        self.deg_reac = inputs.get('lambda')
+        
+        self.Ca1 = inputs.get('Ca1')
+        self.Ca2 = inputs.get('Ca2')
+        
+        self.C1 = inputs.get('C1')
+        self.C2 = inputs.get('C1')
+        self.Cw1 = inputs.get('Cw1')
+        self.Cw2 = inputs.get('Cw2')
+        
+        self.V1 = inputs.get('V1')
+        self.V2 = inputs.get('V1')
+        self.Vw1 = inputs.get('Vw1')
+        self.Vw2 = inputs.get('Vw2')
+        
+        self.alpha_1 =inputs.get('alpha_1')
+        self.alpha_2 =inputs.get('alpha_2')
+        self.beta_1 =inputs.get('beta_1')
+        self.beta_2 =inputs.get('beta_2')
+        
+        self.deg_reac = inputs.get('lambda')
+        
+        
+    # Velocity Triangle
+    #                    /|\  
+    #                   /β|α\
+    #               V1 /  |  \ C1 
+    #                 /   |   \   
+    #                /    |Ca  \
+    #               /     |     \
+    #              <------|------>
+    #                Vw1     Cw1
+    #              -------------->
+    #                     U 
+    #           /P
+    #          //       Rotor 
+    #          ||       ----> U
+    #          ||
+    #           \
+    
+   
+class rotor_turbine():
+    def __init__(self):
+        print('In development')
+        
+        
+def combustor_component():
+    def __init__(self):
+        # Possible inputs/Outputs:
+        # mdot
+        # mdot_ratio ?
+        # mdot_fuel
+        # A_inlet
+        # A_mean
+        # A_exit
+        # phi - Overall equivalence ratio
+        # phi_local - Local equivalence ratio near flame
+        # mdot_local - Local mass flow rate near flame
+        # dPo_full - Full load pressure loss
+        # dPo - Pressure loss at current conditions
+        # V_inlet - Average Inlet velocity
+        # V_exit - Average Exit velocity
+        # To_i - Initial stagnation temperature
+        # To_e - Exit stagnation temperature
+        # Po_i - Inlet stagnation pressure
+        # Po_e - Exit stagnation pressure
+        # f_stoich - Stoicheometric fuel/air ratio
+        # f_ideal  - Ideal fuel/air ratio
+        # f_actual - Actual fuel/air ratio
+        # f_local  - Local fuel/air ratio
+        # nb - combustor efficiency
+        
+        # Intermediates
+        # K1
+        # K2 
+        # X - 1/phi
+        
+        # General Values
+        self.R = 287 # J/kg*K
+        self.cpa = 1.005 # kJ/kg
+        self.cpg = 1.148 # kJ/kg
+        self.gam_a = 1.4 
+        self.gam_g = float(4/3)
+        self.MW_air = 137.3653 # kg/kmol
+        self.MW_C = 12.011 # kg/kmol
+        self.MW_H = 1.0078 # kg/kmol
+        
+        # Desired Calculations:
+        # Pressure Loss
+        # Pressure Loss at part-load
+        # Inlet Area
+        # Exit Area
+        # Mean Area
+        # Inlet Velocity
+        # Exit Velocity
+        # Fuel to air ratio
+        # Overall equivalence ratio
+        # Local mass flow rate
+        # Local equivalence ratio
+        
+    def rho(self, To, Po, mdot, A, Gamma=None):
+        Gamma = self.gam_a if Gamma==None else Gamma
+        P = self.SOMEITERATIVESOLVER(Po, To, mdot, A)
+        a = To 
+        b = -P/self.R 
+        c = - (Gamma-1)*mdot / (2*Gamma*self.R*A**2)
+        rho = (-b + np.sqrt(b**2 - 4*a*c)) / (2*a) # Dont need the - for the quad
+        return rho
+    
+    def rho(self, To, Po, Mach, Gamma=None):
+        Gamma = self.gam_a if Gamma==None else Gamma 
+        rho_o = Po / (self.R*To)
+        rho = rho_o / ((1 + (Gamma-1)*(Mach**2)/2)**(1/(Gamma-1)) )
+        return rho
+     
+    def SOMEITERATIVESOLVER(self, Po, To, mdot, A):
+        print("Working on derivation (its uggy)")
         
 class Turbofan_SingleSpool():
     def __init__(self, **kwargs):
