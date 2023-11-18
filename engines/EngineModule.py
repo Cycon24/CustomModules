@@ -211,7 +211,64 @@ class Compressor(Stage):
         nc = ( self.r**((self.gam_a-1)/self.gam_a) - 1 ) / ( self.r**((self.gam_a-1)/(self.gam_a*np)) - 1 )
         return nc
         
+  
+class Compressor_Stage(Stage):
+    def __init__(self, r_tip, r_root, omega, Ca, AssumeConstAxialVel=True, **inputs):
+        self.r = inputs.get('r')
+        self.w = inputs.get('omega')
+        self.Ca = inputs.get('Ca')
         
+        
+        
+        self.deg_reac = inputs.get('lambda')
+        
+        self.Ca1 = inputs.get('Ca1')
+        self.Ca2 = inputs.get('Ca2')
+        
+        self.C1 = inputs.get('C1')
+        self.C2 = inputs.get('C1')
+        self.Cw1 = inputs.get('Cw1')
+        self.Cw2 = inputs.get('Cw2')
+        
+        self.V1 = inputs.get('V1')
+        self.V2 = inputs.get('V1')
+        self.Vw1 = inputs.get('Vw1')
+        self.Vw2 = inputs.get('Vw2')
+        
+        self.alpha_1 =inputs.get('alpha_1')
+        self.alpha_2 =inputs.get('alpha_2')
+        self.beta_1 =inputs.get('beta_1')
+        self.beta_2 =inputs.get('beta_2')
+        
+        self.deg_reac = inputs.get('lambda')
+        
+        
+    # Velocity Triangle
+    #                    /|\  
+    #                   /β|α\
+    #               V1 /  |  \ C1 
+    #                 /   |   \   
+    #                /    |Ca  \
+    #               /     |     \
+    #              <------|------>
+    #                Vw1     Cw1
+    #              -------------->
+    #                     U 
+    #           /P
+    #          //       Rotor 
+    #          ||       ----> U
+    #          ||
+    #           \
+    
+   
+    
+    
+    
+    
+    
+    
+    
+    
 class Combustor(Stage):
     def __init__(self, **kwargs):
         Stage.__init__(self, **kwargs)

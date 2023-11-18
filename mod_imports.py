@@ -5,10 +5,13 @@ Created on Tue Nov 14 10:23:24 2023
 @author: cycon
 """
 import sys
-import aerodynamics.Aerodynamics as Aerodynamics
-import aerodynamics.AirfoilTransformer as AirfoilTransformer 
-import aerodynamics.AtmosphereModule as Atmosphere 
-import aerodynamics.GasDynamics as GasDynamics
-import aerodynamics.PLLT_LiftDistribution as PLLT 
+import Aerodynamics as Aerodynamics
+import AirfoilTransformer as AirfoilTransformer 
+import AtmosphereModule as Atmosphere 
+import GasDynamics as GasDynamics
+import PLLT_LiftDistribution as PLLT 
+
+sys.path.append('.') 
+import transformer_tools.CoordinateTransformer as CoordinateTransformer
 
 
