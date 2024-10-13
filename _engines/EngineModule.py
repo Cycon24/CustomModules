@@ -210,15 +210,7 @@ class Compressor(Stage):
         '''
         nc = ( self.r**((self.gam_a-1)/self.gam_a) - 1 ) / ( self.r**((self.gam_a-1)/(self.gam_a*np)) - 1 )
         return nc
-        
-  
-
-    
-    
-    
-    
-    
-    
+   
     
 class Combustor(Stage):
     def __init__(self, **kwargs):

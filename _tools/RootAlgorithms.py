@@ -185,54 +185,13 @@ def polyRoots(a,tol=1.0e-12):
 
 # -------- Testing ----------------------------
 if __name__ == '__main__':
-    # Root Search Test
-    def f(x): return x**3 - 10.0*x**2 + 5.0
-    print('----- Root Search -----')
-    x1 = 0.0; x2 = 1.0
-    for i in range(4):
-        dx = (x2 - x1)/10.0
-        x1,x2 = rootsearch(f,x1,x2,dx)
-    x = (x1 + x2)/2.0
-    print('x = {:6.4f}'.format(x))
-        
-    # Bisection Test
-    def f(x): return x - math.tan(x)
+    print('')
+    e = 1.42
+    Mh = 7.3284
     
-    a,b,dx = (0.0, 20.0, 0.01)
-    print('\n----- Bisection -----')
-    print("The roots are:")
-    while True:
-        x1,x2 = rootsearch(f,a,b,dx)
-        if x1 != None:
-            a = x2
-            root = bisection(f,x1,x2,1)
-            if root != None: print(root)
-        else:
-            print("Done")
-            break
+    def f(F): return e*np.sinh(F)-F-Mh
+    def df(F): return e*np.cosh(F) - 1
     
-    # Newton Raphson Test ????
-    def f(x): return x**4 - 6.4*x**3 + 6.45*x**2 + 20.538*x - 31.752
-    def df(x): return 4.0*x**3 - 19.2*x**2 + 12.9*x + 20.538
-    def newtonRaphson_(x,tol=1.0e-9):
-        for i in range(30):
-            dx = -f(x)/df(x)
-            x = x + dx
-            if abs(dx) < tol: return x,i
-        print('Too many iterations\n')
-        
-    root,numIter = newtonRaphson_(2.0)
-    print('\n----- Newton Raphson -----')
-    print('Root = ',root)
-    print('Number of iterations = ',numIter)
-
-    # Newton Raphson 2 Test
-    def f(x):
-        f = np.zeros(len(x))
-        f[0] = math.sin(x[0]) + x[1]**2 + math.log(x[2]) - 7.0
-        f[1] = 3.0*x[0] + 2.0**x[1] - x[2]**3 + 1.0
-        f[2] = x[0] + x[1] + x[2] - 5.0
-        return f
+    low_r, high_r = rootsearch(f,0.001, 4,0.001)
+    F = newtonRaphson(f, df, low_r, high_r)
     
-    x = np.array([1.0, 1.0, 1.0])
-    print('\n----- Newton Raphson2 ----- \n',newtonRaphson2(f,x)) # Checks out
