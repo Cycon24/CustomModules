@@ -16,61 +16,6 @@ def x_pos(A_ft2, BeforeThroat):
     return -x_in/8 if BeforeThroat else x_in
 
 
-class CD_Nozzle():
-    def __init__(self, units='SI'):
-        print('CD Nozzle Class')
-        # We want a general form CD nozzle which can fully explain the theoretical flow through the nozzle
-        # Want to have the option for self-made x vs area functions, 
-        self.Po = None
-        self.Patm = None
-        
-        # Nozzle Geometry
-        self.Ai = None 
-        self.At = None
-        self.Ae = None 
-        self.A_star = None
-        
-        # Gas Constants
-        self.gamma = 1.4 # 1.4 for diatomic, 5/3 for monotomic, 1.3 for other
-        self.R_u = 10.73158     # [psi⋅ft3/lbmol⋅°R]  - Universal Gas Constant (Imperial)
-        self.R_u = 8314         # [J/kmol*K]
-        self.MW  = 28.966       # [kg/kmol] [lbm/lbmol]
-        self.R_air = 287.1   # [J/kg*K)]
-        
-        # Unit coversions
-        self.gc = [1, 32.174] # [NonDim] [𝑙𝑏𝑚−𝑓𝑡/𝑙𝑏𝑓−𝑠^2] - Gravitational Constant
-        
-    def set_gas_constants( MW=None, R=287.1, gamma=1.4):
-        '''
-        Set the gas constants of the gas flowing throug the nozzle. Can input 
-        R if known or can utilize the gas Molecular Weight.If no inputs given 
-        the gas is assumed to be air and in SI units.
-
-        Parameters
-        ----------
-        R : Float, optional
-            Gas Constant. The default is 287.1 J/kg*K.
-        gamma : Float, optional
-            Specific Heat Ratio. The default is 1.4.
-        MW : Float, optional
-            Molecular weight of gas [kg/kmol] or [lbm/lbmol]. The default is None.
-
-        Returns
-        -------
-        None.
-
-        '''
-        # do things
-        
-    def set_area_function(self,function):
-        print('NEED CREATED')
-        self.f_A_x = function
-        
-    def calculate_critical_pressure_ratios(self):
-        print("NEEDS CREATED")
-        
-    def find_shock_locations(self, PR_bs):
-        print("NEEDS CREATED")
 
 
 # Inputs
