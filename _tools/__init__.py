@@ -1,11 +1,11 @@
 import sys 
-sys.path.append("..\\_tools\\")
-import CoordinateTransformer
-import CSV_to_TXT
-import error
-import fft
-import HTML_TableMaker
-import Interpolator
-import MatrixManipulator
-import RootAlgorithms
-import swap
+# sys.path.append("..\\_tools\\")
+import _tools.CoordinateTransformer
+import _tools.CSV_to_TXT
+import _tools.error
+import _tools.fft
+import _tools.HTML_TableMaker
+import _tools.Interpolator
+import _tools.MatrixManipulator
+import _tools.RootAlgorithms
+import _tools.swap

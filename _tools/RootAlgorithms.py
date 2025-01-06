@@ -7,10 +7,10 @@ Created on Mon Feb 20 12:58:21 2023
 
 import numpy as np
 import math
-import error
+import _tools.error
 from random import random
 import cmath
-from MatrixManipulator import gaussPivot
+from _tools.MatrixManipulator import gaussPivot
 
 # --------- Root Search ------------------
 '''
@@ -74,7 +74,7 @@ def newtonRaphson(f,df,a,b,tol=1.0e-9):
     if np.sign(fa) == np.sign(fb): error.err('Root is not bracketed')
     x = 0.5*(a + b)
     
-    for i in range(30):
+    for i in range(100):
         fx = f(x)
         if fx == 0.0: return x
         
@@ -97,7 +97,7 @@ def newtonRaphson(f,df,a,b,tol=1.0e-9):
             
         # Check for convergence
         if abs(dx) < tol*max(abs(b),1.0): return x
-    print('Too many iterations in Newton-Raphson')
+    raise ValueError('Too many iterations in Newton-Raphson')
 
 # --------- Newton Raphson 2 --------------
 ''' soln = newtonRaphson2(f,x,tol=1.0e-9).

@@ -20,7 +20,7 @@ Update-Fixes Log:
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from AtmosphereModule import Atmosphere
+from _aerodynamics.AtmosphereModule import Atmosphere
 
 # Plane Class
 # '''

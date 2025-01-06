@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import MatrixManipulator as MM
+import _tools.MatrixManipulator as MM
 import math
 
 # ----------- Newton Poly -----------

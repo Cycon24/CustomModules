@@ -11,7 +11,7 @@ parentdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if parentdir not in sys.path:
     sys.path.insert(0, parentdir)
 
-import transform_tools.CoordinateTransformer as CT
+import _tools.CoordinateTransformer as CT
 import numpy as np
 import matplotlib.pyplot as plt
 

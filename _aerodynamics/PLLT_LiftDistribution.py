@@ -7,8 +7,8 @@ Created on Fri Mar 24 01:23:34 2023
 import numpy as np
 import scipy.integrate as spint 
 import matplotlib.pyplot as plt
-import MatrixManipulator as MM
-import RootAlgorithms as RT
+import _tools.MatrixManipulator as MM
+import _tools.RootAlgorithms as RT
 import time
 
 # z(x) = 4*h*x(1-x) - the camber line

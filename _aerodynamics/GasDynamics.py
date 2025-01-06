@@ -6,7 +6,7 @@ Created on Fri Mar 24 11:34:05 2023
 """
 # Imports
 import sys
-sys.path.append("..")
+sys.path.append("C:\\Users\\cycon\\Documents\\Modules")
 import _tools.Interpolator as intrp
 import _tools.RootAlgorithms as rt
 import numpy as np
@@ -33,7 +33,7 @@ def calorically_imperfect_gas(Temp, Cv_perf, Cp_perf, gam_p):
 # =============================================================================
 def shockDeflection(Mach=None, Beta_deg=None, Theta_deg=None, Gamma=1.4):
     '''
-    Outputs a dictionary containing the Mach number, Beta angle, and Theta angle for a shock deflection.
+    Outputs a dictionary containing the Mach number, Beta (shock angle), and Theta (deflection angle) for a shock deflection.
     Any two iputs are needed to solve. Angles should be input in degrees
 
     Parameters
@@ -182,7 +182,7 @@ def plotShockDeflection(M=None):
             M.append(M[k]+step)
             step += incr + incr*k/3
             k += 1
-
+    print(M)
     if type(M) != list and type(M) != np.ndarray:
         M = np.array([M])
 
@@ -339,6 +339,179 @@ def mdot(Po, To, A, Mach=1, Gamma=1.4, R=287):
 def Pcrit_Po(Gamma=1.4):
     return (1 + 0.5*(Gamma-1))**(-Gamma/(Gamma-1))
 
+def Mach_at_PR(Po_P, Gamma=1.4, tol=1e-9):
+    '''
+    Calculates the Mach number of isentropic flow
+    At a pressure ratio of Po/P
+
+    Parameters
+    ----------
+    Po_P : Float
+        Pressure ratio.
+    Gamma : Float, optional
+        Gas dependent. The default is 1.4 (air).
+
+    Returns
+    -------
+    Float
+        Mach number at the point where P = Po / (Po/P).
+
+    '''
+    if abs(Po_P - 1) < tol:
+        return 0
+    else:   
+        return np.sqrt(((Po_P)**((Gamma-1)/Gamma) - 1)*2/(Gamma-1))
+
+def Mach_at_TR(To_T, Gamma=1.4, tol=1e-9):
+    '''
+    Calculates the Mach number of isentropic flow
+    At a pressure ratio of To/T
+
+    Parameters
+    ----------
+    Po_P : Float
+        Pressure ratio.
+    Gamma : Float, optional
+        Gas dependent. The default is 1.4 (air).
+
+    Returns
+    -------
+    Float
+        Mach number at the point where P = Po / (Po/P).
+
+    '''
+    if abs(To_T - 1) < tol:
+        return 0
+    else:   
+        return np.sqrt(((To_T) - 1)*2/(Gamma-1))
+# =============================================================================
+#                Nozzle Relations (Isentropic Flow)
+# =============================================================================
+
+def Mach_at_A(Ai_At, Gamma=1.4):
+    '''
+    Calcultes the MachNumberat the area ratio A/A*
+    Returns subsonic and supersonic results
+
+    Parameters
+    ----------
+    Ai_At : Float
+        Area ratio: A/A*.
+    Gamma : Float, optional
+        Gas Dependent. The default is 1.4 (air).
+
+    Returns
+    -------
+    M_subsonic, M_supersonic : Float
+        Subsonic and Supersonic Mach number solution.
+
+    '''
+    if (Ai_At - 1.0) < 1e-5:
+        return 1.0, 1.0
+
+    def FA_ratio(M):
+        return -Ai_At + (1/M)*((1 + M**2*(Gamma-1)/2)/((Gamma+1)/2))**((Gamma+1)/(2*Gamma-2))
+
+    def dAR_M(M):
+        first_num = - (2 + (M**2)*(Gamma-1))**((Gamma+1)/(2*Gamma-2))
+        first_den = (M**2)*(Gamma+1)**((Gamma+1)/(2*Gamma-2))
+        second = ((2 + (M**2)*(Gamma-1))/(Gamma+1))**((-Gamma+3)/(2*Gamma-2))
+        return first_num/first_den + second
+
+    # Solve for first root (subsonic solution)
+    low_r, high_r = rt.rootsearch(FA_ratio, 0.001, 8, 0.01)
+    Msub = rt.newtonRaphson(FA_ratio, dAR_M, low_r, high_r)
+
+    # Solve for second root (sonic solution)
+    low_r, high_r = rt.rootsearch(FA_ratio, Msub+0.01, 15, 0.01)
+    Msup = rt.newtonRaphson(FA_ratio, dAR_M, low_r, high_r)
+
+    return Msub, Msup
+
+# Area ratio: A/A*
+
+
+def A_ratio(M, Gamma=1.4):
+    '''
+    Calculates the ratio of Area / Throat Area from Mach number and Gamma
+
+    Parameters
+    ----------
+    M : Float
+        Mach Number.
+    Gamma : Float, optional
+        The default is 1.4.
+
+    Returns
+    -------
+    A_At : Float
+        A/A*: Area ratio.
+
+    '''
+    A_At = (1/M)*((1 + M**2*(Gamma-1)/2) /
+                  ((Gamma+1)/2))**((Gamma+1)/(2*Gamma-2))
+    return A_At
+
+
+def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1):
+    '''
+    Calculates the Throat Area [m^2] for choked flow.
+
+    Parameters
+    ----------
+    m_dot : Float
+        Mass flow rate in kg/s.
+    Po : Float
+        Total Pressure in Pa.
+    To : Float
+        Total Temperature in K.
+    Gamma : Float, optional
+        Gas dependent. The default is 1.4 (air).
+    R : Float, optional
+        Gas Constant J/kg*K. The default is 287.1 (air).
+
+    Returns
+    -------
+    Float
+        Area of the throat of choked flow.
+
+    '''
+    return m_dot/((Po/np.sqrt(R*To))*np.sqrt(Gamma)*np.power(1+(Gamma-1)/2, (Gamma+1)/(2-2*Gamma)))
+
+
+
+# _________________________________________________________
+
+
+def Isentropic_Flow(**kwargs):
+    Mach = kwargs.get('Mach',None)
+    T_To = kwargs.get('T_To',None)
+    P_Po = kwargs.get('P_Po',None)
+    A_At = kwargs.get('A_At',None)
+    Gamma = kwargs.get('Gamma',1.4)
+    IntegralPoints = kwargs.get('IntegralPoints',1000)
+    root_dx = kwargs.get('root_dx',0.1)
+    root_max_search = kwargs.get('root_max_search',8)
+    
+    if Mach == None: 
+        Props = [T_To, P_Po, A_At]
+        PropsF = [lambda x: Mach_at_TR(x,Gamma), lambda x: Mach_at_PR(x,Gamma), lambda x: Mach_at_A(x,Gamma)]
+        MachFound = False
+        for i,  prop in enumerate(Props):
+            if prop != None:
+                # Perfom root search to get mach number
+                Mach = PropsF[i](prop)
+                MachFound=True
+        if not MachFound:
+            raise ValueError('Not enough inputs')
+            return None
+        
+    T_To = 1/To_T_ratio(Mach,Gamma)
+    P_Po = 1/Po_P_ratio(Mach,Gamma)
+    A_At = A_ratio(Mach,Gamma)
+
+    return {'Mach':Mach, 'T_To':T_To,'P_Po':P_Po,'A_At':A_At}
+    
 
 def mdot_s(P, T, A, Mach=1, Gamma=1.4, R=287):
     '''
@@ -389,6 +562,24 @@ def dv_PM(Mach, Gamma=1.4):
 
 
 def ExpansionFan(Mach1, Theta, Gamma=1.4):
+    '''
+    Calculates the Mach after expansion through a turn of Theta degrees.
+
+    Parameters
+    ----------
+    Mach1 : Float
+        Mach number of flow before expansion wave.
+    Theta : Float
+        The turn angle in degrees of the flow (Angle between M1 and M2).
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    Mach2: Float
+        Mach number of flow after expansion fan.
+
+    '''
     def PM(Mach2):
         return nu_PM(Mach2) - nu_PM(Mach1) - np.radians(Theta)
 
@@ -636,7 +827,6 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
             Pb_Po1_target), low_r, '  r2 = ', high_r)
 
 
-# _________________________________________________________
 
 # =============================================================================
 #                Turning Flow - Oblique Shock
@@ -652,14 +842,35 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
 #   - Stag Temperature stays constant
 
 def Mach2_ob(Mach1, Beta, Theta, Gamma=1.4):
-    B_rad = np.radians(Beta)
-    th_rad = np.radians(Theta)
+    '''
+    Calculates the magnitude of M2 from Mach,
+    Beta (shock angle), and Theta (deflecction angle)
+      
+    Parameters
+    ----------
+    Mach1 : Float
+        Mach number of flow before shock.
+    Beta : Float, degrees
+        Oblique shock angle relative to line parallel to Vinf.
+    Theta : Float, degrees
+        Deflection angle relative to line parallel to Vinf.
+    Gamma : Float, optional
+        Gas constant ratio. The default is 1.4.
 
-    num = (np.sin(B_rad)**2)*(Mach1**2) + 2/(Gamma-1)
-    den = (2*Gamma/(Gamma-1))*(np.sin(B_rad)**2)*(Mach1**2) - 1
+    Returns
+    -------
+    Mach2 : Float
+        Mach numberof flow after shock.
 
-    m2 = np.sqrt(num/(den*np.sin(B_rad - th_rad)))/np.sin(B_rad-th_rad)
-    return m2
+    '''
+    Beta = np.radians(Beta)
+    Theta = np.radians(Theta)
+
+    M1n = Mach1*np.sin(Beta)
+    num = M1n**2 + 2/(Gamma-1)
+    den = (2*Gamma*M1n**2)/(Gamma-1) - 1
+    Mach2 = (1/np.sin(Beta-Theta))*np.sqrt(num/den)
+    return Mach2
 
 
 def Mach_ob_to_n(Mach1, Beta, Theta):
@@ -722,189 +933,325 @@ def Shock_Angle_ob(Mach, P2_P1, gamma=1.4):
     '''
     return np.rad2deg(np.arcsin(np.sqrt((P2_P1*(gamma+1) + (gamma-1))/(2*gamma*Mach**2))))
 
-# =============================================================================
-#                Nozzle Relations (Isentropic Flow)
-# =============================================================================
 
-def Mach_at_A(Ai_At, Gamma=1.4):
-    '''
-    Calcultes the MachNumberat the area ratio A/A*
-    Returns subsonic and supersonic results
-
-    Parameters
-    ----------
-    Ai_At : Float
-        Area ratio: A/A*.
-    Gamma : Float, optional
-        Gas Dependent. The default is 1.4 (air).
-
-    Returns
-    -------
-    M_subsonic, M_supersonic : Float
-        Subsonic and Supersonic Mach number solution.
-
-    '''
-    if (Ai_At - 1.0) < 1e-5:
-        return 1.0, 1.0
-
-    def FA_ratio(M):
-        return -Ai_At + (1/M)*((1 + M**2*(Gamma-1)/2)/((Gamma+1)/2))**((Gamma+1)/(2*Gamma-2))
-
-    def dAR_M(M):
-        first_num = - (2 + (M**2)*(Gamma-1))**((Gamma+1)/(2*Gamma-2))
-        first_den = (M**2)*(Gamma+1)**((Gamma+1)/(2*Gamma-2))
-        second = ((2 + (M**2)*(Gamma-1))/(Gamma+1))**((-Gamma+3)/(2*Gamma-2))
-        return first_num/first_den + second
-
-    # Solve for first root (subsonic solution)
-    low_r, high_r = rt.rootsearch(FA_ratio, 0.001, 8, 0.01)
-    Msub = rt.newtonRaphson(FA_ratio, dAR_M, low_r, high_r)
-
-    # Solve for second root (sonic solution)
-    low_r, high_r = rt.rootsearch(FA_ratio, Msub+0.01, 15, 0.01)
-    Msup = rt.newtonRaphson(FA_ratio, dAR_M, low_r, high_r)
-
-    return Msub, Msup
-
-# Area ratio: A/A*
-
-
-def A_ratio(M, Gamma=1.4):
-    '''
-    Calculates the ratio of Area / Throat Area from Mach number and Gamma
-
-    Parameters
-    ----------
-    M : Float
-        Mach Number.
-    Gamma : Float, optional
-        The default is 1.4.
-
-    Returns
-    -------
-    A_At : Float
-        A/A*: Area ratio.
-
-    '''
-    A_At = (1/M)*((1 + M**2*(Gamma-1)/2) /
-                  ((Gamma+1)/2))**((Gamma+1)/(2*Gamma-2))
-    return A_At
-
-
-def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1):
-    '''
-    Calculates the Throat Area [m^2] for choked flow.
-
-    Parameters
-    ----------
-    m_dot : Float
-        Mass flow rate in kg/s.
-    Po : Float
-        Total Pressure in Pa.
-    To : Float
-        Total Temperature in K.
-    Gamma : Float, optional
-        Gas dependent. The default is 1.4 (air).
-    R : Float, optional
-        Gas Constant J/kg*K. The default is 287.1 (air).
-
-    Returns
-    -------
-    Float
-        Area of the throat of choked flow.
-
-    '''
-    return m_dot/((Po/np.sqrt(R*To))*np.sqrt(Gamma)*np.power(1+(Gamma-1)/2, (Gamma+1)/(2-2*Gamma)))
-
-
-def Mach_at_PR(Po_P, Gamma=1.4):
-    '''
-    Calculates the Mach number of isentropic flow
-    At a pressure ratio of Po/P
-
-    Parameters
-    ----------
-    Po_P : Float
-        Pressure ratio.
-    Gamma : Float, optional
-        Gas dependent. The default is 1.4 (air).
-
-    Returns
-    -------
-    Float
-        Mach number at the point where P = Po / (Po/P).
-
-    '''
-    return np.sqrt(((Po_P)**((Gamma-1)/Gamma) - 1)*2/(Gamma-1))
 # __________________________________________
 
+# =============================================================================
+#           Fanno Flow
+# =============================================================================
 
+def Fanno_T_Tstar(Mach, Gamma=1.4, IntegralPoints=1000):
+    def M_internal(M):
+        return -(Gamma-1)*(M) / (1 + np.power(M,2)*(Gamma-1)/2)
+    
+    def MachIntegral(M):
+        Ms = np.linspace(M,1,IntegralPoints)
+        Ms_int = M_internal(Ms)
+        Integral = np.trapz(Ms_int,Ms)
+        return Integral
+    
+    T_Tstar  = 1/np.exp(MachIntegral(Mach))
+    return T_Tstar
+
+def Fanno_P_Pstar(Mach, Gamma=1.4, IntegralPoints=1000):
+    def M_internal(M):
+        return -(1/M)*(1 + (Gamma-1)*np.power(M,2) ) / (1 + np.power(M,2)*(Gamma-1)/2)
+    
+    def MachIntegral(M):
+        Ms = np.linspace(M,1,IntegralPoints)
+        Ms_int = M_internal(Ms)
+        Integral = np.trapz(Ms_int,Ms)
+        return Integral
+    
+    P_Pstar  = 1/np.exp(MachIntegral(Mach))
+    return P_Pstar
+
+def Fanno_Po_Postar(Mach, Gamma=1.4, IntegralPoints=1000):
+    Po_P = Po_P_ratio(Mach,Gamma)
+    Pstar_Postar = 1/Po_P_ratio(1, Gamma)
+    Po_Postar = Po_P * Fanno_P_Pstar(Mach,Gamma,IntegralPoints) * Pstar_Postar 
+    return Po_Postar 
+
+def Fanno_fLmax_D(Mach,Gamma=1.4,IntegralPoints=1000):
+    def M_internal(M):
+        return (2/M)*(1 - np.power(M,2) ) / ((1 + np.power(M,2)*(Gamma-1)/2)*Gamma*np.power(M,2))
+    
+    def MachIntegral(M):
+        Ms = np.linspace(M,1,IntegralPoints)
+        Ms_int = M_internal(Ms)
+        Integral = np.trapz(Ms_int,Ms)
+        return Integral 
+    
+    fLmax_D  = MachIntegral(Mach)
+    return fLmax_D
+    
+
+def Fanno_Flow(**kwargs):
+    # Define functions for use later
+    def T_Tstar_DF(M):
+        return -(Gamma-1)*(M) / (1 + np.power(M,2)*(Gamma-1)/2)
+    
+    def T_Tstar_F(Mach):
+        def MachIntegral(M):
+            Ms = np.linspace(M,1,IntegralPoints)
+            Ms_int = T_Tstar_DF(Ms)
+            Integral = np.trapz(Ms_int,Ms)
+            return Integral
+        
+        T_Tstar  = 1/np.exp(MachIntegral(Mach))
+        return T_Tstar
+    
+    def P_Pstar_DF(M):
+        return -(1/M)*(1 + (Gamma-1)*np.power(M,2) ) / (1 + np.power(M,2)*(Gamma-1)/2)
+
+    def P_Pstar_F(Mach):        
+        def MachIntegral(M):
+            Ms = np.linspace(M,1,IntegralPoints)
+            Ms_int = P_Pstar_DF(Ms)
+            Integral = np.trapz(Ms_int,Ms)
+            return Integral
+        
+        P_Pstar  = 1/np.exp(MachIntegral(Mach))
+        return P_Pstar
+
+    def fLmax_D_DF(M):
+        return (2/M)*(1 - np.power(M,2) ) / ((1 + np.power(M,2)*(Gamma-1)/2)*Gamma*np.power(M,2))
+
+    def fLmax_D_F(Mach):
+        
+        def MachIntegral(M):
+            Ms = np.linspace(M,1,IntegralPoints)
+            Ms_int = fLmax_D_DF(Ms)
+            Integral = np.trapz(Ms_int,Ms)
+            return Integral 
+        
+        fLmax_D  = MachIntegral(Mach)
+        return fLmax_D
+    
+    # Pull out the kwargs
+    Mach = kwargs.get('Mach',None)
+    T_Tstar = kwargs.get('T_Tstar',None)
+    P_Pstar = kwargs.get('P_Pstar',None)
+    fLmax_D = kwargs.get('fLmax_D',None)
+    Gamma = kwargs.get('Gamma',1.4)
+    IntegralPoints = kwargs.get('IntegralPoints',1000)
+    
+    root_dx = kwargs.get('root_dx',0.1)
+    root_max_search = kwargs.get('root_max_search',8)
+    root_min_search = kwargs.get('root_min_search',1e-6)
+    forceSupersonic = kwargs.get('forceSupersonic',False)
+    Mach_sup = None        
+        
+    if Mach == None: 
+        Props = [T_Tstar, P_Pstar, fLmax_D]
+        PropsF = [T_Tstar_F, P_Pstar_F, fLmax_D_F]
+        PropsDF = [T_Tstar_DF, P_Pstar_DF, fLmax_D_DF]
+        MachFoud = False
+        for i,  prop in enumerate(Props):
+            if prop != None:
+                # Perfom root search to get mach number
+                try:
+                    low_r, high_r = rt.rootsearch(lambda M: PropsF[i](M) - prop, root_min_search, root_max_search, root_dx)
+                    Mach = rt.newtonRaphson(lambda M: PropsF[i](M) - prop, PropsDF[i], low_r, high_r)
+                    
+                    if fLmax_D != None and fLmax_D > 0.7681818527269877:
+                        root_min_search = 7 
+                        root_max_search = 100
+                        root_dx = 1
+                     
+                    if fLmax_D != None and fLmax_D > 0.8192125375987388:
+                        Mach_sup = None
+                    else:
+                        low_r, high_r = rt.rootsearch(lambda M: PropsF[i](M) - prop, 1 + root_min_search, root_max_search, root_dx)
+                        Mach_sup = rt.newtonRaphson(lambda M: PropsF[i](M) - prop, PropsDF[i], low_r, high_r)
+                    
+                    MachFound =True 
+                except:
+                    MachFound = False
+                    raise ValueError('Could not sovle for Mach number')
+        if not MachFound:
+            raise ValueError('Not enough inputs')
+            return None
+    
+    if forceSupersonic:
+        if Mach < 1:
+            Mach= Mach_sup if Mach_sup != None else Mach
+            # print('Warning: Could not force supersonic condition')
+            
+    T_Tstar = Fanno_T_Tstar(Mach,Gamma)
+    P_Pstar = Fanno_P_Pstar(Mach,Gamma)
+    Po_Postar = Fanno_Po_Postar(Mach,Gamma)
+    fLmax_D = Fanno_fLmax_D(Mach,Gamma)
+    return {'Mach':Mach,'Mach_sup':Mach_sup, 'T_Tstar':T_Tstar,'P_Pstar':P_Pstar,'Po_Postar':Po_Postar,'fLmax_D':fLmax_D}
+    
+
+# =============================================================================
+#  Rayleigh Flow - Heat Transfer in a Duct 
+# =============================================================================
+
+def P_Pstar_Ray(Mach, Gamma=1.4):
+    P_Pstar = (1 + Gamma) / (1 + Gamma*Mach**2)
+    return P_Pstar
+
+def T_Tstar_Ray(Mach, Gamma=1.4):
+    T_Tstar = (Mach**2)*(1 + Gamma)**2 / (1 + Gamma*Mach**2)**2
+    return T_Tstar
+
+def V_Vstar_Ray(Mach, Gamma=1.4):
+    P_Pstar = P_Pstar_Ray(Mach,Gamma)
+    T_Tstar = T_Tstar_Ray(Mach,Gamma)
+    V_Vstar = T_Tstar/P_Pstar 
+    return V_Vstar
+
+def To_Tostar_Ray(Mach,Gamma=1.4):
+    To_Tostar = ((Mach**2)*(1 + Gamma)**2 / (1 + Gamma*Mach**2)**2) * (1 + (Mach**2)*(Gamma-1)/2)/(1 + (Gamma-1)/2)
+    return To_Tostar 
+
+def Po_Postar_Ray(Mach,Gamma=1.4):
+    Po_Postar = P_Pstar_Ray(Mach,Gamma)*((1+(Mach**2)*(Gamma-1)/2)**(Gamma/(Gamma-1))) / (1+(Gamma - 1)/2)**(Gamma/(Gamma-1))
+    return Po_Postar
+
+def Mach_at_Rayleigh(Prop_ratio, Prop_F,Gamma=1.4):
+    low, high = rt.rootsearch(lambda P: Prop_ratio - Prop_F(P,Gamma), 1e-6, 5, 1e-6)
+    Mach = (low + high)/2 
+    return Mach
+
+def Rayleigh_Flow(**kwargs):
+    Mach = kwargs.get('Mach',None)
+    T_Tstar = kwargs.get('T_Tstar',None)
+    P_Pstar = kwargs.get('P_Pstar',None)
+    To_Tostar = kwargs.get('To_Tostar',None)
+    Po_Postar = kwargs.get('Po_Postar',None)
+    
+    Gamma = kwargs.get('Gamma',1.4)
+    IntegralPoints = kwargs.get('IntegralPoints',1000)
+    root_dx = kwargs.get('root_dx',0.1)
+    root_max_search = kwargs.get('root_max_search',8)
+    
+    Props = [T_Tstar, P_Pstar, To_Tostar, Po_Postar]
+    PropsF = [T_Tstar_Ray, P_Pstar_Ray, To_Tostar_Ray, Po_Postar_Ray]
+    
+    if Mach == None: 
+        MachFound = False
+        for i,  prop in enumerate(Props):
+            if prop != None:
+                # Perfom root search to get mach number
+                Mach = Mach_at_Rayleigh(Props[i],PropsF[i],Gamma)
+                MachFound=True
+        if not MachFound:
+            raise ValueError('Not enough inputs')
+            return None
+        
+    for i, F in enumerate(PropsF):
+        Props[i] = F(Mach,Gamma)
+
+    return {'Mach':Mach, 'T_Tstar':Props[0],'P_Pstar':Props[1],'To_Tostar':Props[2], 'Po_Postar':Props[3]}
+    
+
+
+
+
+
+
+# def IsoThermal(fL_D, Mach, Gamma=1.4, dM = 1e-6, tol=1e-9):
+#     M1 = Mach
+#     M2 = M1
+#     error = -1
+    
+#     while prevsign==currentsign:
+#         M2 += dM
+#         error = -fL_D + (1 - Gamma*M1**2)/(Gamma*M1**2) - (1 - Gamma*M2**2)/(Gamma*M2**2) + np.log(M1**2/M2**2)
+#         print(error, M2)
+#     return M2
 # =============================================================================
 #           Main
 # =============================================================================
 
 if __name__ == "__main__":
-    # T1 = 300 # K
-    # Vs1 = 1035.853 # m/s
-    # Vg1 = 25 # m/s
-    # Vg2 = 50 # m/s
-    # gam = 5/3
-    # R = 2076.9423
-    # V1 = Vs1 
-    # V2 = Vs1 - Vg1 
+    def ob_shock_p():
+        M1 = 2.0
+        shock_angle = 40 # deg
+        P1 = 20      # kPa
+        T1 = 263.15  # K
+        
+        Theta = shockDeflection(M1, shock_angle, None)['Theta']
+        m1n, m1t, m2n, m2t = Mach_ob_to_n(M1, shock_angle, Theta)
+        
+        P2 = P1*PR_n(m1n, m2n)
+        T2 = T1*TR_n(m1n, m2n)
+        M2 = np.sqrt(m2n**2 + m2t**2)
+        # Find static pressure and temperature after shock
+        # find shock angle 
+        # find mach 2
     
-    # Ms1 = V1/np.sqrt(gam*R*T1)
-    # T2 = T1*T2_T1_n(Ms1, gam)
+    def ex_windtunnel():
+        T2 = 216.7
+        P2 = 5.53e3
+        M2 = 2.0
+        A = np.pi*(0.25/2)**2
+        
+        Po = P2*Po_P_ratio(M2)
+        To = T2*To_T_ratio(M2)
+        
+        m_dot = mdot(Po, To, A, M2)
+        V2 = M2*np.sqrt(1.4*287*T2)
+        cp = 1.005 # J/kg*K
+        
+        h2 = cp*T2
+        h1 = cp*To
+        
+  
+    # # Problem 1 exam
+    # Po = 200e3
+    # To = 500
+    # M = 1 
+    # A = 15*(1/100)**2
+    # gam = 1.4
+    # R = 287
+    # print(mdot(Po, To, A,M,gam,R))
     
-    # a2 = np.sqrt(gam*R*T2)
-    # M2 = Mach2_n(Ms1, gam)
     
-    # def f(Vs2):
-    #     return ((gam+1)*((Vs2-Vg1)/a2)**2)/((gam-1)*((Vs2-Vg1)/a2)**2 + 2) - (Vs2-25)/(Vs2-50)
+    # PR_exit_shock = P2_P1_n(2.6374, 1.4)*(1/Po_P_ratio(2.6374, 1.4))
+
+    # flow_ang = Shock_Angle_ob(2.0,0.5)
+    # M2 = ExpansionFan(2.0, flow_ang)
+
+    f = 0.02
+    A_At = 2 
+    Po = 500
+    L_D = 25
+    Pb = 0
+    Me = 1 
     
-    # def f2(Vs2):
-    #     return 
+    Mi = Mach_at_A(A_At)[1]
+    i = Isentropic_Flow(Mach=Mi)
+    Pi_Po  = i['P_Po']
+    
+    i_f = Fanno_Flow(Mach=Mi)
+    Pi_Pstar = i_f['P_Pstar'] 
+    fLmax_D_i = i_f['fLmax_D']
+    
    
-    # # find roots: 
-    # print(rt.rootsearch(f, 0, 2000, 0.01))
-    # Po = 5000 # kpa
-    # A_At = A_ratio(1.75)
-    # M_sub, M_sup = Mach_at_A(A_At)
-    # Pb_max = Po/Po_P_ratio(M_sub)
-    # Pb_sup = Po/Po_P_ratio(M_sup)
+    # P1 = s1['P_Po']*500
     
-    # Ms2 = Mach2_n(M_sup)
-    # P2 = Pb_sup*PR_n(M_sup, Ms2)
+    # s1_fanno = Fanno_Flow(Mach=s1['Mach'])
     
-    Po = 3000e3#kpa
-    Pb1 = 101e3 # kpa
-    Pb2 = 0# kpa
-    gam = 1.4
-    R = 400
-    To = 1600
-    Me = Mach_at_PR(Po/Pb1,gam)
-    Ae_At = A_ratio(Me,gam)
-    mdotA = mdot(Po, To, A=1,Mach=Me,Gamma=gam,R=R)
+    # fLmax2_D = s1_fanno['fLmax_D'] - 0.2 
     
-    T_rat = 1/To_T_ratio(Me,gam)
-    Te = To*T_rat
-    Ve = Me*np.sqrt(gam*R*Te)
-    Rho_e = Pb1/(R*Te)
-    
-    mdotA_2 = mdot_s(Pb1,Te,1,Me,gam,R)
-    
-    Ft1_Ft2 = mdotA_2*Ve/(mdotA_2*Ve+Pb1)
-    
-    Ft1_Ft2_2 = (Rho_e*Ve**2)/(Rho_e*Ve**2 + Pb1)
+    # s2 = Fanno_Flow(fLmax_D=fLmax2_D)
+    # P2_P1 = s2['P_Pstar']*s1_fanno['P_Pstar']
     
     
-    # M = 2.75 + ((0.03367 - 0.037425)/(0.024663-0.037425))*(3-2.75)
-    # 2.75  0.037425 
-    # 3.00  0.024663
+    # M3 = Mach2_n(s2['Mach_sup'])
+    # P3_P2 = P2_P1_n(s2['Mach_sup'])
+    # P3 = P3_P2*P2_P1*P1
+    # IsoThermal(62.5,0.03375,1.32,1e-9)
+
     
     
     
     
     
     
-   
+    
+    

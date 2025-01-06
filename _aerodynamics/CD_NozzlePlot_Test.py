@@ -159,6 +159,7 @@ for iA, Ax_At in enumerate(A_rats):
                 #     Px_Pos[iA, iPb] = Pb_Po
                 # else:
                 Px_Pos[iA, iPb] = 1/GD.Po_P_ratio(M_sup, gamma) 
+            
             Px_Pos[-1,iPb] = Pb_Po
         else:
             # Choked and fully expanded flow (pe = pb)
