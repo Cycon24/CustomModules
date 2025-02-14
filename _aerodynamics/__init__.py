@@ -1,4 +1,4 @@
-import _aerodynamics.Aerodynamics
+# import _aerodynamics.Aerodynamics
 import _aerodynamics.AirfoilTransformer
 import _aerodynamics.AtmosphereModule
 import _aerodynamics.GasDynamics

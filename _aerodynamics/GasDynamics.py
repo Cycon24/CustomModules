@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 import math
 
 
-
-
 def calorically_imperfect_gas(Temp, Cv_perf, Cp_perf, gam_p):
     # Standin for now  just to save these equations/details
     Theta = 3055.556  # 5500 [Deg R] or 3055.556 [K]
@@ -305,32 +303,35 @@ def RHO_o_Rho(Mach, Gamma=1.4):
     return (1 + (Gamma-1)*(Mach**2)/2)**(1/(Gamma-1))
 
 
-def mdot(Po, To, A, Mach=1, Gamma=1.4, R=287):
+def mdot(Po, To, A, Mach=1, Gamma=1.4, R=287, gc=1):
     '''
     Calculates the mass flow rate from stagnation conditions
 
     Parameters
     ----------
     Po : Float
-        Stagnation Pressure [Pa].
+        Stagnation Pressure [Pa] or [lbf/ft^2].
     To : Float
-        Stagnation Temperature [K].
+        Stagnation Temperature [K] or [R].
     A : Float
-        Area of channel [m^2].
+        Area of channel [m^2] or [ft^2].
     Mach : Float, optional
         Mach of gas. The default is 1.
     Gamma : Float, optional
         DESCRIPTION. The default is 1.4.
-    R : TYPE, optional
+    R : Float, optional
         Gas Constant [J/kg*K]. The default is 287.
-
+        Or [ft*lbf/R*lbm], 53.535 for air.
+    gc : Float, optional
+        Unit conversion parameter. The default is 1 [kg·m/N·s^2]
+        For English Units: gc = 32.174 [lbm·ft/lbf·s^2]
     Returns
     -------
     Float
         mdot [kg/s].
 
     '''
-    first = (Po*A/(np.sqrt(R*To))) * Mach*np.sqrt(Gamma)
+    first = (Po*A/(np.sqrt(R*To/gc))) * Mach*np.sqrt(Gamma)
     second = 1 + ((Gamma-1)/2)*(Mach**2)
     power = -(Gamma+1)/(2*(Gamma-1))
     return first*np.power(second, power)
@@ -1018,7 +1019,6 @@ def Fanno_Flow(**kwargs):
         return (2/M)*(1 - np.power(M,2) ) / ((1 + np.power(M,2)*(Gamma-1)/2)*Gamma*np.power(M,2))
 
     def fLmax_D_F(Mach):
-        
         def MachIntegral(M):
             Ms = np.linspace(M,1,IntegralPoints)
             Ms_int = fLmax_D_DF(Ms)
