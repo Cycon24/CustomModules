@@ -12,6 +12,19 @@ import _tools.RootAlgorithms as rt
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+'''
+Planned to-do log:
+    2-20-2025: (Unresolved) Need to incorperate root search params in IsentropicFlow function
+    2-20-2025: (Unresolved) Need to add ability to find Mach from MFP function and incorp. in Isentropic FlowFunction
+    2-20-2025: (Unresolved) Need to add docstrings for total Flow Functions (Fanno/Rayleigh)
+
+Done:
+    2-27-2025: (Resolved) Renamed all Normal Shock Equations to start with 'NS' to find all related functions easier
+    2-27-2025: (Resolved) Made headway in adding docstrings for all functions, still need:
+                                - All Fanno Flow functions
+                                - Full Fanno and Rayleigh Flow docstring finish
+
+'''
 
 
 def calorically_imperfect_gas(Temp, Cv_perf, Cp_perf, gam_p):
@@ -338,6 +351,20 @@ def mdot(Po, To, A, Mach=1, Gamma=1.4, R=287, gc=1):
 
 
 def Pcrit_Po(Gamma=1.4):
+    '''
+    Calculates the critical pressure ratio (static/total) for the sonic condition.
+
+    Parameters
+    ----------
+    Gamma : TYPE, optional
+        Specific Heat Ratio of gas. The default is 1.4 for air.
+
+    Returns
+    -------
+    Float
+        Ratio P_crit/Po of the gas at the sonic condition.
+
+    '''
     return (1 + 0.5*(Gamma-1))**(-Gamma/(Gamma-1))
 
 def Mach_at_PR(Po_P, Gamma=1.4, tol=1e-9):
@@ -481,16 +508,76 @@ def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1):
 
 
 
+def MassFlowParam_norm(Mach, Gamma=1.4):
+    '''
+    Calculates the mass flow parameter from the Mach number and spec. heat ratio.
+    Returns the value:
+        MFP*sqrt(R/gc) [NonDim] = mdot * sqrt(To) / (Po * A)
+
+    Parameters
+    ----------
+    Mach : Float
+        Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio of the gas. The default is 1.4.
+
+    Returns
+    -------
+    MFPsqrtRgc : Float
+        Normalized Mass Flow Parameter.
+
+    '''
+    MFPsqrtRgc = Mach*np.sqrt(Gamma)*(1 + (Mach**2)*(Gamma-1)/2)**(-(Gamma+1)/(2*Gamma-2))
+    
+    return MFPsqrtRgc
+
+
 # _________________________________________________________
 
 
 def Isentropic_Flow(**kwargs):
+    '''
+    Calculates all related ratios/values for isentropic compressible flow
+    from a single input (Currently does not support input of MFP*sqrt(R/gc)).
+
+    Parameters
+    ----------
+    **kwargs : Dictionary of inputs
+        Gas Properties:
+            'Gamma' - Float, default of 1.4 for air
+        Flow Properties (enter one):
+            'Mach' - Mach number of flow
+            'T_To' - Static to Stagnation Temperature ratio
+            'P_Po' - Static to Stagnation Pressure ratio
+            'A_At' - Current Area to Throat Area ratio
+        Function Properties:
+            'IntegralPoints' - Defines the number of points used for root solves (not used currently)
+            'root_dx' - Step size of dx (Mach) for root solves (not used currently)
+            'root_max_search' - Maximum x (Mach) for root solves (not used currently)
+            
+
+    Raises
+    ------
+    ValueError
+        Raised when not enough inputs to solve flow equations.
+
+    Returns
+    -------
+    dict
+        Contains:
+            'Mach': Mach number 
+            'T_To': Static to Stagnation Temperature Ratio
+            'P_Po': Static to Stagnation Pressure Ratio
+            'A_At': Current Cross-section Area to Throat Area Ratio
+            'MFPsqrtR_gc': Normalized Mass Flow Parameter (MFP*sqrt(R/g_c))
+
+    '''
     Mach = kwargs.get('Mach',None)
     T_To = kwargs.get('T_To',None)
     P_Po = kwargs.get('P_Po',None)
     A_At = kwargs.get('A_At',None)
     Gamma = kwargs.get('Gamma',1.4)
-    IntegralPoints = kwargs.get('IntegralPoints',1000)
+    # IntegralPoints = kwargs.get('IntegralPoints',1000)
     root_dx = kwargs.get('root_dx',0.1)
     root_max_search = kwargs.get('root_max_search',8)
     
@@ -504,14 +591,15 @@ def Isentropic_Flow(**kwargs):
                 Mach = PropsF[i](prop)
                 MachFound=True
         if not MachFound:
-            raise ValueError('Not enough inputs')
+            raise ValueError('Isentropic Flow: Insufficient inputs')
             return None
         
     T_To = 1/To_T_ratio(Mach,Gamma)
     P_Po = 1/Po_P_ratio(Mach,Gamma)
     A_At = A_ratio(Mach,Gamma)
+    MFPsqrtR_gc = MassFlowParam_norm(Mach, Gamma)
 
-    return {'Mach':Mach, 'T_To':T_To,'P_Po':P_Po,'A_At':A_At}
+    return {'Mach':Mach, 'T_To':T_To,'P_Po':P_Po,'A_At':A_At, 'MFPsqrtR_gc':MFPsqrtR_gc}
     
 
 def mdot_s(P, T, A, Mach=1, Gamma=1.4, R=287):
@@ -545,24 +633,52 @@ def mdot_s(P, T, A, Mach=1, Gamma=1.4, R=287):
 # =============================================================================
 # Define Prendtl-Meyer Function to pass into approximations
 
+def mu_MachWave(Mach):
+    '''
+    Calculates μ which is the mach wave angle for supersonic flow.
+
+    Parameters
+    ----------
+    Mach : Float
+        Mach number >= 1.
+
+    Returns
+    -------
+    mu : Float
+        Angle μ in radians.
+
+    '''
+    mu = np.arcsin(1/Mach)
+    return mu 
 
 def nu_PM(Mach, Gamma=1.4):
-    return np.sqrt((Gamma+1)/(Gamma-1)) * \
+    '''
+    Calculates the angle ν (nu) for supersonic flow that is required for sonic flow to turn
+    in order to reach the inputted Mach number
+
+    Parameters
+    ----------
+    Mach : Float
+        Mach number of flow.
+    Gamma : Float, optional
+        Specific Heat Ratio of the gas. The default is 1.4 for air.
+
+    Returns
+    -------
+    nu : Float
+        The angle sonic flow has turned to reach the inputted Mach number in Radians.
+
+    '''
+    nu = np.sqrt((Gamma+1)/(Gamma-1)) * \
         np.arctan(np.sqrt((Gamma-1)*(np.power(Mach, 2) - 1)/(Gamma+1))) - \
         np.arctan(np.sqrt(np.power(Mach, 2) - 1))
+    return nu
 
-# Exact Solutions
-
-
-def dv_PM(Mach, Gamma=1.4):
-    Num = 2*np.sqrt(np.power(Mach, 2) - 1)
-    Den = Mach*(Gamma*np.power(Mach, 2) - np.power(Mach, 2) + 2)
-    return np.divide(Num, Den)
 
 # Full Prendtly-Meyer Solver to get Mach from input
 
 
-def ExpansionFan(Mach1, Theta, Gamma=1.4):
+def Expansion_Fan(Mach1, Theta, Gamma=1.4):
     '''
     Calculates the Mach after expansion through a turn of Theta degrees.
 
@@ -584,20 +700,25 @@ def ExpansionFan(Mach1, Theta, Gamma=1.4):
     def PM(Mach2):
         return nu_PM(Mach2) - nu_PM(Mach1) - np.radians(Theta)
 
+    def dv_PM(Mach, Gamma=1.4):
+        Num = 2*np.sqrt(np.power(Mach, 2) - 1)
+        Den = Mach*(Gamma*np.power(Mach, 2) - np.power(Mach, 2) + 2)
+        return np.divide(Num, Den)
+    
     # Root Search
     low_r, high_r = rt.rootsearch(PM, Mach1, 20, 0.01)
     # Newton Raphson
     M2 = rt.newtonRaphson(PM, dv_PM, low_r, high_r)
     return M2
 
-
 # ________________________________________________________
+
 
 # =============================================================================
 #            Normal Shock Relations Properties
 # =============================================================================
 # velocity ratio across normal shock: v2/v1
-def vR_n(Mach1, Mach2, Temp1, Temp2):
+def NS_Vel_Ratio(Mach1, Mach2, Temp1, Temp2):
     '''
     Calculates the velocity ratio across a normal shock.
     v2/v1
@@ -622,73 +743,53 @@ def vR_n(Mach1, Mach2, Temp1, Temp2):
     # Temperatures are static, in absolute units
     return (Mach2/Mach1)*np.sqrt(Temp2/Temp1)
 
-# density ratio across normal shock: rho2/rho1
 
-
-def rhoR_n(Mach1, Mach2, Temp1, Temp2):
-    # Temperatures are static, in absolute units
-    return (Mach1/Mach2)*np.sqrt(Temp1/Temp2)
-
-# static temperature ratio across normal shock: T2/T1
-def TR_n(Mach1, Mach2, Gamma=1.4):
-    return (1+(Mach1**2)*(Gamma-1)/2)/(1+(Mach2**2)*(Gamma-1)/2)
-
-# static pressure ratio across normal shock: p2/p1
-
-
-def PR_n(Mach1, Mach2, Gamma=1.4):
+def NS_Mach2(Mach1, Gamma=1.4):
     '''
-    Returns P2/P1
+    Calculates the Mach number of flow after a normal shock
 
     Parameters
     ----------
-    Mach1 : TYPE
-        DESCRIPTION.
-    Mach2 : TYPE
-        DESCRIPTION.
-    Gamma : TYPE, optional
-        DESCRIPTION. The default is 1.4.
+    Mach1 : Float
+        Mach number of flow upstream of shock.
+    Gamma : Float, optional
+        Specific Heat Ratio of gas. The default is 1.4 for air.
 
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    Mach2: Float
+        Mach number of flow downstream of the shock.
 
     '''
-    return (1+Gamma*Mach1**2)/(1+Gamma*Mach2**2)
-
-# mach number after a shock wave
-
-
-def Mach2_n(Mach1, Gamma=1.4):
     num = Mach1**2 + 2/(Gamma-1)
     den = -1 + (2*Gamma/(Gamma-1))*Mach1**2
-    return np.sqrt(num/den)
-
-# ---- Stagnation Properties ----
-# stagnation pressure ratio across normal shock: po2/po1
-
-
-def stag_PR_n(Pres1, Pres2, Temp1, Temp2, Gamma=1.4):
-    return (Pres2/Pres1)*(Temp1/Temp2)**(Gamma/(Gamma-1))
-
-# stagnation density ratio across normal shock: ρo2/ρo1
-
-
-def stag_rhoR_n(stagPres1, stagPres2):
-    return stagPres1/stagPres2
+    Mach2 = np.sqrt(num/den)
+    return Mach2
 
 # throat area across normal shock? A2*/A1*
+def NS_Throat_A_Ratio(Mach, Gamma=1.4):
+    '''
+    Calculates the area ratios of the throat condition before and after a shock:
+        A2*/A1*
+    MAY NEED VERIFIED 
+    
+    Parameters
+    ----------
+    Mach: Float
+        Mach number of flow upstream of shock.
 
+    Returns
+    -------
+    At2_At1: Float
+        Area ratio of throats for flow downstream (2) and upstream (1) of shock.
 
-def throatAreaR_n(stagPres1, stagPres2):
-    return stagPres1/stagPres2
+    '''
+    At2_At1 = 1/NS_Po2_Po1(Mach, Gamma)
+    return At2_At1
 
 # Properties after shock from Mach number
 # static temperature ratio across normal shock: T2/T1
-
-
-def T2_T1_n(Mach1, Gamma=1.4):
+def NS_T2_T1(Mach1, Gamma=1.4):
     '''
     Calculates the static temperature ratio T2/T1 across a normal shock from the Mach number.
 
@@ -705,11 +806,11 @@ def T2_T1_n(Mach1, Gamma=1.4):
         Ratio of T2/T1.
 
     '''
-    Mach2 = Mach2_n(Mach1, Gamma)
+    Mach2 = NS_Mach2(Mach1, Gamma)
     return (1+(Mach1**2)*(Gamma-1)/2)/(1+(Mach2**2)*(Gamma-1)/2)
 
 
-def P2_P1_n(Mach1, Gamma=1.4):
+def NS_P2_P1(Mach1, Gamma=1.4):
     '''
     Calculates the static pressure ratio P2/P1 across a normal shock from the Mach number.
 
@@ -726,17 +827,10 @@ def P2_P1_n(Mach1, Gamma=1.4):
         Ratio of P2/P1.
 
     '''
-    Mach2 = Mach2_n(Mach1, Gamma)
+    Mach2 = NS_Mach2(Mach1, Gamma)
     return (1+Gamma*Mach1**2)/(1+Gamma*Mach2**2)
 
-
-def Rho2_Rho1_n(Mach1, Gamma=1.4):
-    Mach2 = Mach2_n(Mach1, Gamma)
-    T1_T2 = 1/T2_T1_n(Mach1, Gamma)
-    return (Mach1/Mach2)*np.sqrt(T1_T2)
-
-
-def Po2_Po1_n(Mach1, Gamma=1.4):
+def NS_Po2_Po1(Mach1, Gamma=1.4):
     '''
     Calculates the stagnation pressure ratio P2/P1 across a normal shock from the Mach number.
 
@@ -753,13 +847,60 @@ def Po2_Po1_n(Mach1, Gamma=1.4):
         Ratio of Po2/Po1.
 
     '''
-    p2_p1 = P2_P1_n(Mach1, Gamma)
-    T1_T2 = 1/T2_T1_n(Mach1, Gamma)
+    p2_p1 = NS_P2_P1(Mach1, Gamma)
+    T1_T2 = 1/NS_T2_T1(Mach1, Gamma)
     return p2_p1*T1_T2**(Gamma/(Gamma-1))
+
+
+def NS_Rho2_Rho1(Mach1, Gamma=1.4):
+    '''
+    Calculates the Static Density Ratio across a normal shock:
+        ρ2/ρ1
+
+    Parameters
+    ----------
+    Mach1 : Float
+        Mach number of flow upstream of shock.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    ρ2/ρ1: Float
+        Static Density Ratio (1 - Upstrea, 2 - Downstream).
+
+    '''
+    Mach2 = NS_Mach2(Mach1, Gamma)
+    T1_T2 = 1/NS_T2_T1(Mach1, Gamma)
+    return (Mach1/Mach2)*np.sqrt(T1_T2)
+
+def NS_Rho_o2_Rho_o1(Mach1, Gamma=1.4):
+    '''
+    Calculates the Stagnation Density Ratio across a normal shock:
+        ρo2/ρo1
+
+    Parameters
+    ----------
+    Mach1 : Float
+        Mach number of flow upstream of shock.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    ρo2/ρo1: Float
+        Stagnation Density Ratio (1 - Upstrea, 2 - Downstream).
+
+    '''
+    return 1/NS_Po2_Po1(Mach1, Gamma)
+
+
 
 
 def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
     '''
+    Calculates the Area of Shock / Throat area for a CD nozzle in which the back pressure
+    induces a normal shock within the nozzle.
     Procedure:
         We will take an iterative approach to finding the area ratio. This
         means that we will start by guessing the As_At ratio, solving for Pb/Po,
@@ -796,8 +937,8 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
         M_sub, M1 = Mach_at_A(As_At, Gamma)
 
         # Find properties after shock
-        Ms2 = Mach2_n(M1, Gamma)
-        Po2_Po1 = Po2_Po1_n(M1, Gamma)
+        Ms2 = NS_Mach2(M1, Gamma)
+        Po2_Po1 = NS_Po2_Po1(M1, Gamma)
 
         # Check if the pressure right after shock is = Pb
         P2_Po2 = 1/Po_P_ratio(Ms2, Gamma)
@@ -899,7 +1040,7 @@ def Mach_ob_to_n(Mach1, Beta, Theta):
 
     '''
     m1n = Mach1*np.sin(np.radians(Beta))
-    m2n = Mach2_n(m1n)
+    m2n = NS_Mach2(m1n)
     Mach2 = m2n/np.sin(np.radians(Beta-Theta))
     m1t = Mach1*np.cos(np.radians(Beta))
     m2t = Mach2*np.cos(np.radians(Beta-Theta))
@@ -921,7 +1062,7 @@ def Shock_Angle_ob(Mach, P2_P1, gamma=1.4):
     ----------
     Mach : Float
         Mach number of flow before shock.
-    P1_P0 : Float
+    P2_P1 : Float
         Static Pressure ratio of before (P1) and after (P2) shock.
     gamma : Float, optional
         Specifc Heat Ratio. The default is 1.4.
@@ -942,6 +1083,25 @@ def Shock_Angle_ob(Mach, P2_P1, gamma=1.4):
 # =============================================================================
 
 def Fanno_T_Tstar(Mach, Gamma=1.4, IntegralPoints=1000):
+    '''
+    Sonic Reference Temperature Ratio for Fanno Flow:
+        T/T*
+
+    Parameters
+    ----------
+    Mach : Float
+        Mach number of flow.
+    gamma : Float, optional
+        Specifc Heat Ratio. The default is 1.4.
+    IntegralPoints : TYPE, optional
+        DESCRIPTION. The default is 1000.
+
+    Returns
+    -------
+    Float
+        T/T*.
+
+    '''
     def M_internal(M):
         return -(Gamma-1)*(M) / (1 + np.power(M,2)*(Gamma-1)/2)
     
@@ -986,6 +1146,12 @@ def Fanno_fLmax_D(Mach,Gamma=1.4,IntegralPoints=1000):
     fLmax_D  = MachIntegral(Mach)
     return fLmax_D
     
+def Fanno_I_Istar(Mach, Gamma=1.4):
+    I_Istar = (1 + Gamma*Mach**2) / (Mach*np.sqrt( (2*(Gamma+1)) * (1 + (Mach**2)*(Gamma-1)/2)  ))    
+    return I_Istar
+
+
+
 
 def Fanno_Flow(**kwargs):
     # Define functions for use later
@@ -1034,8 +1200,8 @@ def Fanno_Flow(**kwargs):
     P_Pstar = kwargs.get('P_Pstar',None)
     fLmax_D = kwargs.get('fLmax_D',None)
     Gamma = kwargs.get('Gamma',1.4)
-    IntegralPoints = kwargs.get('IntegralPoints',1000)
     
+    IntegralPoints = kwargs.get('IntegralPoints',1000)
     root_dx = kwargs.get('root_dx',0.1)
     root_max_search = kwargs.get('root_max_search',8)
     root_min_search = kwargs.get('root_min_search',1e-6)
@@ -1082,41 +1248,172 @@ def Fanno_Flow(**kwargs):
     P_Pstar = Fanno_P_Pstar(Mach,Gamma)
     Po_Postar = Fanno_Po_Postar(Mach,Gamma)
     fLmax_D = Fanno_fLmax_D(Mach,Gamma)
-    return {'Mach':Mach,'Mach_sup':Mach_sup, 'T_Tstar':T_Tstar,'P_Pstar':P_Pstar,'Po_Postar':Po_Postar,'fLmax_D':fLmax_D}
+    I_Istar = Fanno_I_Istar(Mach, Gamma)
+    
+    return {'Mach':Mach,'Mach_sup':Mach_sup, 'T_Tstar':T_Tstar,'P_Pstar':P_Pstar,'Po_Postar':Po_Postar,'fLmax_D':fLmax_D, 'I_Istar':I_Istar}
     
 
 # =============================================================================
 #  Rayleigh Flow - Heat Transfer in a Duct 
 # =============================================================================
 
-def P_Pstar_Ray(Mach, Gamma=1.4):
+def Rayleigh_P_Pstar(Mach, Gamma=1.4):
+    '''
+    Calculates the Static Pressure ratio for Rayleigh flow relative to sonic condition:
+        P/P*
+
+    Parameters
+    ----------
+    Mach : Float
+        Current Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    P_Pstar : Float
+        Static Reference Pressure Ratio.
+
+    '''
     P_Pstar = (1 + Gamma) / (1 + Gamma*Mach**2)
     return P_Pstar
 
-def T_Tstar_Ray(Mach, Gamma=1.4):
+def Rayleigh_T_Tstar(Mach, Gamma=1.4):
+    '''
+    Calculates the Static Temperature ratio for Rayleigh flow relative to sonic condition:
+        T/T*
+
+    Parameters
+    ----------
+    Mach : Float
+        Current Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    T_Tstar : Float
+        Static Reference Temperature Ratio.
+
+    '''
     T_Tstar = (Mach**2)*(1 + Gamma)**2 / (1 + Gamma*Mach**2)**2
     return T_Tstar
 
-def V_Vstar_Ray(Mach, Gamma=1.4):
-    P_Pstar = P_Pstar_Ray(Mach,Gamma)
-    T_Tstar = T_Tstar_Ray(Mach,Gamma)
+def Rayleigh_V_Vstar(Mach, Gamma=1.4):
+    '''
+    Calculates the Velocity ratio for Rayleigh flow relative to sonic condition:
+        V/V*
+
+    Parameters
+    ----------
+    Mach : Float
+        Current Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    V_Vstar : Float
+        Reference Velocity Ratio.
+
+    '''
+    P_Pstar = Rayleigh_P_Pstar(Mach,Gamma)
+    T_Tstar = Rayleigh_T_Tstar(Mach,Gamma)
     V_Vstar = T_Tstar/P_Pstar 
     return V_Vstar
 
-def To_Tostar_Ray(Mach,Gamma=1.4):
+def Rayleigh_To_Tostar(Mach,Gamma=1.4):
+    '''
+    Calculates the Stagnation Temperature ratio for Rayleigh flow relative to sonic condition:
+        To/To*
+
+    Parameters
+    ----------
+    Mach : Float
+        Current Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    To_Tostar : Float
+        Stagnation Reference Temperature Ratio.
+
+    '''
     To_Tostar = ((Mach**2)*(1 + Gamma)**2 / (1 + Gamma*Mach**2)**2) * (1 + (Mach**2)*(Gamma-1)/2)/(1 + (Gamma-1)/2)
     return To_Tostar 
 
-def Po_Postar_Ray(Mach,Gamma=1.4):
-    Po_Postar = P_Pstar_Ray(Mach,Gamma)*((1+(Mach**2)*(Gamma-1)/2)**(Gamma/(Gamma-1))) / (1+(Gamma - 1)/2)**(Gamma/(Gamma-1))
+def Rayleigh_Po_Postar(Mach,Gamma=1.4):
+    '''
+    Calculates the Stagnation Pressure ratio for Rayleigh flow relative to sonic condition:
+        To/To*
+
+    Parameters
+    ----------
+    Mach : Float
+        Current Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    Po_Postar : Float
+        Stagnation Reference Pressure Ratio.
+
+    '''
+    Po_Postar = Rayleigh_P_Pstar(Mach,Gamma)*((1+(Mach**2)*(Gamma-1)/2)**(Gamma/(Gamma-1))) / (1+(Gamma - 1)/2)**(Gamma/(Gamma-1))
     return Po_Postar
 
-def Mach_at_Rayleigh(Prop_ratio, Prop_F,Gamma=1.4):
-    low, high = rt.rootsearch(lambda P: Prop_ratio - Prop_F(P,Gamma), 1e-6, 5, 1e-6)
-    Mach = (low + high)/2 
-    return Mach
+def Rayleigh_phi_MS(Mach,Gamma=1.4):
+    '''
+    Calculates the Phi(M^2) for Rayleigh flow from the Mach number and Gamma.
+
+    Parameters
+    ----------
+    Mach : Float
+        Mach number of flow.
+    Gamma : Float, optional
+        Specific heat ratio of gas. The default is 1.4.
+
+    Returns
+    -------
+    Phi_MS : Float
+        Phi(M^2) of flow.
+
+    '''
+    Phi_MS = (Mach**2)*(1+(Mach**2)*(Gamma-1)/2) / (1+Gamma*Mach**2)**2
+    return Phi_MS
+
+
 
 def Rayleigh_Flow(**kwargs):
+    '''
+    Calculates all related flow parameters for Rayleigh flow (Inviscid, constant area duct with heat exchange).
+    Can calcualte all parameters from a single input.
+
+    Parameters
+    ----------
+    **kwargs : Dict,
+        Flow Params (One Necessary)
+        DESCRIPTION.
+
+    Raises
+    ------
+    ValueError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
+    
+    def Mach_at_Rayleigh(Prop_ratio, Prop_F,Gamma=1.4):
+        low, high = rt.rootsearch(lambda P: Prop_ratio - Prop_F(P,Gamma), 1e-6, 5, 1e-6)
+        Mach = (low + high)/2 
+        return Mach
+    
     Mach = kwargs.get('Mach',None)
     T_Tstar = kwargs.get('T_Tstar',None)
     P_Pstar = kwargs.get('P_Pstar',None)
@@ -1129,7 +1426,7 @@ def Rayleigh_Flow(**kwargs):
     root_max_search = kwargs.get('root_max_search',8)
     
     Props = [T_Tstar, P_Pstar, To_Tostar, Po_Postar]
-    PropsF = [T_Tstar_Ray, P_Pstar_Ray, To_Tostar_Ray, Po_Postar_Ray]
+    PropsF = [Rayleigh_T_Tstar, Rayleigh_P_Pstar, Rayleigh_To_Tostar, Rayleigh_Po_Postar]
     
     if Mach == None: 
         MachFound = False
@@ -1144,10 +1441,11 @@ def Rayleigh_Flow(**kwargs):
         
     for i, F in enumerate(PropsF):
         Props[i] = F(Mach,Gamma)
+        
+    Phi_MS = Rayleigh_phi_MS(Mach, Gamma)
 
-    return {'Mach':Mach, 'T_Tstar':Props[0],'P_Pstar':Props[1],'To_Tostar':Props[2], 'Po_Postar':Props[3]}
+    return {'Mach':Mach, 'T_Tstar':Props[0],'P_Pstar':Props[1],'To_Tostar':Props[2], 'Po_Postar':Props[3], 'Phi_MS':Phi_MS}
     
-
 
 
 
@@ -1168,21 +1466,21 @@ def Rayleigh_Flow(**kwargs):
 # =============================================================================
 
 if __name__ == "__main__":
-    def ob_shock_p():
-        M1 = 2.0
-        shock_angle = 40 # deg
-        P1 = 20      # kPa
-        T1 = 263.15  # K
+    # def ob_shock_p():
+    #     M1 = 2.0
+    #     shock_angle = 40 # deg
+    #     P1 = 20      # kPa
+    #     T1 = 263.15  # K
         
-        Theta = shockDeflection(M1, shock_angle, None)['Theta']
-        m1n, m1t, m2n, m2t = Mach_ob_to_n(M1, shock_angle, Theta)
+    #     Theta = shockDeflection(M1, shock_angle, None)['Theta']
+    #     m1n, m1t, m2n, m2t = Mach_ob_to_n(M1, shock_angle, Theta)
         
-        P2 = P1*PR_n(m1n, m2n)
-        T2 = T1*TR_n(m1n, m2n)
-        M2 = np.sqrt(m2n**2 + m2t**2)
-        # Find static pressure and temperature after shock
-        # find shock angle 
-        # find mach 2
+    #     P2 = P1*PR_n(m1n, m2n)
+    #     T2 = T1*TR_n(m1n, m2n)
+    #     M2 = np.sqrt(m2n**2 + m2t**2)
+    #     # Find static pressure and temperature after shock
+    #     # find shock angle 
+    #     # find mach 2
     
     def ex_windtunnel():
         T2 = 216.7
@@ -1242,7 +1540,7 @@ if __name__ == "__main__":
     # P2_P1 = s2['P_Pstar']*s1_fanno['P_Pstar']
     
     
-    # M3 = Mach2_n(s2['Mach_sup'])
+    # M3 = NS_Mach2(s2['Mach_sup'])
     # P3_P2 = P2_P1_n(s2['Mach_sup'])
     # P3 = P3_P2*P2_P1*P1
     # IsoThermal(62.5,0.03375,1.32,1e-9)
