@@ -550,6 +550,7 @@ def Isentropic_Flow(**kwargs):
             'T_To' - Static to Stagnation Temperature ratio
             'P_Po' - Static to Stagnation Pressure ratio
             'A_At' - Current Area to Throat Area ratio
+            'MFPsqrtR_gc' - Normalized MFP (NOT SUPPORTED YET)
         Function Properties:
             'IntegralPoints' - Defines the number of points used for root solves (not used currently)
             'root_dx' - Step size of dx (Mach) for root solves (not used currently)
@@ -1048,6 +1049,22 @@ def Mach_ob_to_n(Mach1, Beta, Theta):
 
 
 def Mach_Tang(Mach, Beta):
+    '''
+    Calculates the tangential component of Mach number of the flow.
+    Parameters
+    ----------
+    Mach : Float
+        Mach number of flow upstream/downstream of oblique shock.
+    Beta : Float
+        In Degrees, the oblique shock angle.
+
+    Returns
+    -------
+    Float
+        Tangential Mach number of flow before/after oblique shock of angle Beta.
+
+    '''
+    
     return Mach*np.sin(np.radians(Beta))
 
 # After swapping from oblique to normal Machs, can use them
