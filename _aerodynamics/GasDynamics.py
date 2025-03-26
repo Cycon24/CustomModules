@@ -419,7 +419,7 @@ def Mach_at_TR(To_T, Gamma=1.4, tol=1e-9):
 def Mach_at_A(Ai_At, Gamma=1.4):
     '''
     Calcultes the MachNumberat the area ratio A/A*
-    Returns subsonic and supersonic results
+    Returns subsonic and supersonic results (tuple of floats)
 
     Parameters
     ----------
@@ -531,6 +531,86 @@ def MassFlowParam_norm(Mach, Gamma=1.4):
     
     return MFPsqrtRgc
 
+def Mach_at_mdot(m_dot, Po, To, A, Gamma=1.4, R=287, gc=1, forceSupersonic=False):
+    '''
+    Calculates the Mach number from the mass flow 
+    rate and stagnation conditions. This is likened
+    to the Mass Flow Parameter (MFP)
+
+    Parameters
+    ----------
+    mdot: Float
+        Mass flow rate [kg/s] or [lbm/s]
+    Po : Float
+        Stagnation Pressure [Pa] or [lbf/ft^2].
+    To : Float
+        Stagnation Temperature [K] or [R].
+    A : Float
+        Area of channel [m^2] or [ft^2].
+    Gamma : Float, optional
+        DESCRIPTION. The default is 1.4.
+    R : Float, optional
+        Gas Constant [J/kg*K]. The default is 287.
+        Or [ft*lbf/R*lbm], 53.535 for air.
+    gc : Float, optional
+        Unit conversion parameter. The default is 1 [kg·m/N·s^2]
+        For English Units: gc = 32.174 [lbm·ft/lbf·s^2]
+    Returns
+    -------
+    Float
+        Mach : Float
+            Mach number of gas.
+
+    '''
+    mdot_f = lambda x: (m_dot - mdot(Po, To, A, Mach=x, Gamma=Gamma, R=R, gc=gc))
+    start = 1 if forceSupersonic else 0
+    
+    low_r, high_r = rt.rootsearch(mdot_f, start, 8, 0.01) # Searching for mach number
+    if type(low_r) != float:
+        raise ValueError('Mach not found in range 0 to 8')
+    
+    
+    for i in range(0,3):
+        M_low, M_high = rt.rootsearch(mdot_f, low_r, high_r, 10**(i-6))
+        if type(M_low) == float:
+            break 
+        print('Increasing step size')
+    if type(M_low) == float:
+        Mach = (M_low + M_high)/2
+    else: 
+        raise ValueError('Mach not found in range {:.3f} to {:.3f}'.format(low_r, high_r))
+    return Mach
+
+def Inlet_Additive_Drag(Mach0, Mach1, Gamma=1.4):
+    '''
+    Computes the nondimensional additive drag:
+        D_add / (P0*A1)
+
+    Parameters
+    ----------
+    Mach0 : Float
+        Mach number of freestream.
+    Mach1 : Float
+        Mach number at inlet face.
+    Gamma : Float
+        Specific heat ratio (def=1.4).
+
+    Returns
+    -------
+    Dadd_p0A1 : float
+        Non-dim Additive Drag.
+
+    '''
+    term1 = (1 + ((Gamma - 1) / 2) * Mach0**2) / (1 + ((Gamma - 1) / 2) * Mach1**2)
+    exponent1 = Gamma / (2 * (Gamma - 1))
+    exponent2 = Gamma / (Gamma - 1)
+
+    first_term = Gamma * Mach0 * (term1 ** exponent1)
+    bracket_term = (Mach1 / Mach0) * np.sqrt(((1 + ((Gamma - 1) / 2) * Mach1**2) / (1 + ((Gamma - 1) / 2) * Mach0**2))) - 1
+    second_term = (term1 ** exponent2) - 1
+
+    Dadd_p0A1 = first_term * bracket_term + second_term
+    return Dadd_p0A1
 
 # _________________________________________________________
 
