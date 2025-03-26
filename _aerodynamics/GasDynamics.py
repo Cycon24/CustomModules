@@ -581,6 +581,8 @@ def Mach_at_mdot(m_dot, Po, To, A, Gamma=1.4, R=287, gc=1, forceSupersonic=False
         raise ValueError('Mach not found in range {:.3f} to {:.3f}'.format(low_r, high_r))
     return Mach
 
+
+
 def Inlet_Additive_Drag(Mach0, Mach1, Gamma=1.4):
     '''
     Computes the nondimensional additive drag:
@@ -602,15 +604,16 @@ def Inlet_Additive_Drag(Mach0, Mach1, Gamma=1.4):
 
     '''
     term1 = (1 + ((Gamma - 1) / 2) * Mach0**2) / (1 + ((Gamma - 1) / 2) * Mach1**2)
-    exponent1 = Gamma / (2 * (Gamma - 1))
+    exponent1 = (Gamma+1) / (2 * (Gamma - 1))
     exponent2 = Gamma / (Gamma - 1)
 
-    first_term = Gamma * Mach0 * (term1 ** exponent1)
-    bracket_term = (Mach1 / Mach0) * np.sqrt(((1 + ((Gamma - 1) / 2) * Mach1**2) / (1 + ((Gamma - 1) / 2) * Mach0**2))) - 1
+    first_term = Gamma * Mach1 * (term1 ** exponent1)
+    bracket_term = Mach1 * np.sqrt(((1 + ((Gamma - 1) / 2) * Mach0**2) / (1 + ((Gamma - 1) / 2) * Mach1**2))) - Mach0
     second_term = (term1 ** exponent2) - 1
 
     Dadd_p0A1 = first_term * bracket_term + second_term
     return Dadd_p0A1
+
 
 # _________________________________________________________
 
