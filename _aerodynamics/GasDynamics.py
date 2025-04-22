@@ -416,6 +416,19 @@ def Mach_at_TR(To_T, Gamma=1.4, tol=1e-9):
 #                Nozzle Relations (Isentropic Flow)
 # =============================================================================
 
+def AreaRatioWithPressureLoss(M1, M2, Pt2_Pt1, Gamma=1.4):
+    MFP1 = MassFlowParam_norm(M1, Gamma)
+    MFP2 = MassFlowParam_norm(M2, Gamma)
+    
+    A2_A1 = (Pt2_Pt1)*(MFP1/MFP2)
+    return A2_A1
+
+def M1_Area_Ratios(A2_A1, M2, Pt2_Pt1, Gamma=1.4):
+    A_ratio = lambda x: -A2_A1 + AreaRatioWithPressureLoss(x, M2, Pt2_Pt1, Gamma)
+    low_r, high_r = rt.rootsearch(A_ratio, 0.001, 8, 0.01)
+    return (low_r + high_r)/2
+
+
 def Mach_at_A(Ai_At, Gamma=1.4):
     '''
     Calcultes the MachNumberat the area ratio A/A*
