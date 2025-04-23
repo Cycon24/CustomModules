@@ -494,7 +494,7 @@ def A_ratio(M, Gamma=1.4):
     return A_At
 
 
-def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1):
+def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1, gc=1):
     '''
     Calculates the Throat Area [m^2] for choked flow.
 
@@ -517,7 +517,7 @@ def A_throat(m_dot, Po, To, Gamma=1.4, R=287.1):
         Area of the throat of choked flow.
 
     '''
-    return m_dot/((Po/np.sqrt(R*To))*np.sqrt(Gamma)*np.power(1+(Gamma-1)/2, (Gamma+1)/(2-2*Gamma)))
+    return m_dot/((Po/np.sqrt(R*To/gc))*np.sqrt(Gamma)*np.power(1+(Gamma-1)/2, (Gamma+1)/(2-2*Gamma)))
 
 
 
@@ -578,7 +578,7 @@ def Mach_at_mdot(m_dot, Po, To, A, Gamma=1.4, R=287, gc=1, forceSupersonic=False
     mdot_f = lambda x: (m_dot - mdot(Po, To, A, Mach=x, Gamma=Gamma, R=R, gc=gc))
     start = 1 if forceSupersonic else 0
     
-    low_r, high_r = rt.rootsearch(mdot_f, start, 8, 0.01) # Searching for mach number
+    low_r, high_r = rt.rootsearch(mdot_f, start, 1000, 0.01) # Searching for mach number
     if type(low_r) != float:
         raise ValueError('Mach not found in range 0 to 8')
     
