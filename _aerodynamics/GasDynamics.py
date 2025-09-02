@@ -417,6 +417,27 @@ def Mach_at_TR(To_T, Gamma=1.4, tol=1e-9):
 # =============================================================================
 
 def AreaRatioWithPressureLoss(M1, M2, Pt2_Pt1, Gamma=1.4):
+    '''
+    Calculates the cross-sectional area ratio between two locations in 
+    between of which there is a loss in total pressure.
+
+    Parameters
+    ----------
+    M1 : Float
+        Mach number of gas at station 1.
+    M2 : Float
+        Mach number of gas at station 2.
+    Pt2_Pt1 : Float
+        Total pressure ratio Pt2/Pt1 < 1.
+    Gamma : Float, optional
+        Specific heat ratio of gas. The default is 1.4.
+
+    Returns
+    -------
+    A2_A1 : Float
+        Area ratio of station 2 to station 1: A2/A1.
+
+    '''
     MFP1 = MassFlowParam_norm(M1, Gamma)
     MFP2 = MassFlowParam_norm(M2, Gamma)
     
@@ -424,6 +445,27 @@ def AreaRatioWithPressureLoss(M1, M2, Pt2_Pt1, Gamma=1.4):
     return A2_A1
 
 def M1_Area_Ratios(A2_A1, M2, Pt2_Pt1, Gamma=1.4):
+    '''
+    Approximates the mach number upstream of an area change (A2/A1) in which there
+    is a total pressure loss Pt2/Pt1 from the Mach number at station 2. 
+
+    Parameters
+    ----------
+    A2_A1 : Float
+        Area ratio between station 1 and 2: A2/A1.
+    M2 : Float
+        Mach number at station 2.
+    Pt2_Pt1 : Float
+        Total pressure loss ratio.
+    Gamma : Float, optional
+        Specific heat ratio of gas. The default is 1.4.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    '''
     A_ratio = lambda x: -A2_A1 + AreaRatioWithPressureLoss(x, M2, Pt2_Pt1, Gamma)
     low_r, high_r = rt.rootsearch(A_ratio, 0.001, 8, 0.01)
     return (low_r + high_r)/2
@@ -1068,7 +1110,7 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
 
 
 # =============================================================================
-#                Turning Flow - Oblique Shock
+#                Turning Flow - Oblique Shock (OBS)
 # =============================================================================
 
 # Notes: Oblique shock at angle Beta relative to Vinf.
@@ -1080,7 +1122,7 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
 #   To find property changes across oblique shock, use M1n and M2n
 #   - Stag Temperature stays constant
 
-def Mach2_ob(Mach1, Beta, Theta, Gamma=1.4):
+def OBS_Mach2(Mach1, Beta, Theta, Gamma=1.4):
     '''
     Calculates the magnitude of M2 from Mach,
     Beta (shock angle), and Theta (deflecction angle)
@@ -1112,9 +1154,11 @@ def Mach2_ob(Mach1, Beta, Theta, Gamma=1.4):
     return Mach2
 
 
-def Mach_ob_to_n(Mach1, Beta, Theta):
+def OBS_to_NS_Mach(Mach1, Beta, Theta):
     '''
-
+    Breaks the flow upstream of an oblique shock wave into normal
+    and tangential components relative to the shock and calculates the 
+    components after the shock. 
     Parameters
     ----------
     Mach1 : Float
