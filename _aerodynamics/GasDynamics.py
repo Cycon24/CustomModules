@@ -6,7 +6,9 @@ Created on Fri Mar 24 11:34:05 2023
 """
 # Imports
 import sys
-sys.path.append("C:\\Users\\cycon\\Documents\\Modules")
+# sys.path.append("C:\\Users\\cycon\\Documents\\Modules")
+sys.path.append("C:\\Users\\Cycon Gaming Night\\Documents\\cModules\\")
+
 import _tools.Interpolator as intrp
 import _tools.RootAlgorithms as rt
 import numpy as np
@@ -348,6 +350,39 @@ def mdot(Po, To, A, Mach=1, Gamma=1.4, R=287, gc=1):
     second = 1 + ((Gamma-1)/2)*(Mach**2)
     power = -(Gamma+1)/(2*(Gamma-1))
     return first*np.power(second, power)
+
+
+def mdot_s(P, T, A, Mach=1, Gamma=1.4, R=287, gc=1):
+    '''
+    Calculates the mass flow from the static properties
+
+    Parameters
+    ----------
+    P : Float
+        Static Pressure [Pa] or [lbf/ft^2].
+    T : Float
+        Static Temperature [K] or [R].
+    A : Float
+        Area of channel [m^2] or [ft^2].
+    Mach : Float, optional
+        Mach of gas. The default is 1 (choked).
+    Gamma : Float, optional
+        DESCRIPTION. The default is 1.4 for air.
+    R : Float, optional
+        Gas Constant [J/kg*K]. The default is 287.
+        Or [ft*lbf/R*lbm], 53.535 for air.
+    gc : Float, optional
+        Unit conversion parameter. The default is 1 [kg·m/N·s^2]
+        For English Units: gc = 32.174 [lbm·ft/lbf·s^2]
+
+    Returns
+    -------
+    Float
+        mass flow rate [kg/s] or [lbm/s.
+
+    '''
+    mdot = P * A * Mach * np.sqrt(Gamma*gc / (T*R))
+    return mdot
 
 
 def Pcrit_Po(Gamma=1.4):
@@ -741,32 +776,7 @@ def Isentropic_Flow(**kwargs):
     return {'Mach':Mach, 'T_To':T_To,'P_Po':P_Po,'A_At':A_At, 'MFPsqrtR_gc':MFPsqrtR_gc}
     
 
-def mdot_s(P, T, A, Mach=1, Gamma=1.4, R=287):
-    '''
-    Calculates the mass flow from the static properties
 
-    Parameters
-    ----------
-    P : Float
-        Static Pressure [Pa].
-    T : Flaot
-        Static Temperature [Pa].
-    A : Float
-        Area of channel [m^2].
-    Mach : Float, optional
-        Mach of airfow. The default is 1.
-    Gamma : Float, optional
-        DESCRIPTION. The default is 1.4.
-    R : Float, optional
-        Gas constant [J/kg*K]. The default is 287.
-
-    Returns
-    -------
-    Float
-        mass flow rate [kg/s].
-
-    '''
-    return (P/(R*T))*A*Mach*np.sqrt(Gamma*R*T)
 # =============================================================================
 #               Prendlt Meyer Expansion Fan
 # =============================================================================
@@ -1639,21 +1649,23 @@ if __name__ == "__main__":
     #     # find shock angle 
     #     # find mach 2
     
-    def ex_windtunnel():
-        T2 = 216.7
-        P2 = 5.53e3
-        M2 = 2.0
-        A = np.pi*(0.25/2)**2
+    # plotShockDeflection()
+    
+    # def ex_windtunnel():
+    #     T2 = 216.7
+    #     P2 = 5.53e3
+    #     M2 = 2.0
+    #     A = np.pi*(0.25/2)**2
         
-        Po = P2*Po_P_ratio(M2)
-        To = T2*To_T_ratio(M2)
+    #     Po = P2*Po_P_ratio(M2)
+    #     To = T2*To_T_ratio(M2)
         
-        m_dot = mdot(Po, To, A, M2)
-        V2 = M2*np.sqrt(1.4*287*T2)
-        cp = 1.005 # J/kg*K
+    #     m_dot = mdot(Po, To, A, M2)
+    #     V2 = M2*np.sqrt(1.4*287*T2)
+    #     cp = 1.005 # J/kg*K
         
-        h2 = cp*T2
-        h1 = cp*To
+    #     h2 = cp*T2
+    #     h1 = cp*To
         
   
     # # Problem 1 exam
@@ -1671,20 +1683,20 @@ if __name__ == "__main__":
     # flow_ang = Shock_Angle_ob(2.0,0.5)
     # M2 = ExpansionFan(2.0, flow_ang)
 
-    f = 0.02
-    A_At = 2 
-    Po = 500
-    L_D = 25
-    Pb = 0
-    Me = 1 
+    # f = 0.02
+    # A_At = 2 
+    # Po = 500
+    # L_D = 25
+    # Pb = 0
+    # Me = 1 
     
-    Mi = Mach_at_A(A_At)[1]
-    i = Isentropic_Flow(Mach=Mi)
-    Pi_Po  = i['P_Po']
+    # Mi = Mach_at_A(A_At)[1]
+    # i = Isentropic_Flow(Mach=Mi)
+    # Pi_Po  = i['P_Po']
     
-    i_f = Fanno_Flow(Mach=Mi)
-    Pi_Pstar = i_f['P_Pstar'] 
-    fLmax_D_i = i_f['fLmax_D']
+    # i_f = Fanno_Flow(Mach=Mi)
+    # Pi_Pstar = i_f['P_Pstar'] 
+    # fLmax_D_i = i_f['fLmax_D']
     
    
     # P1 = s1['P_Po']*500
@@ -1701,7 +1713,7 @@ if __name__ == "__main__":
     # P3_P2 = P2_P1_n(s2['Mach_sup'])
     # P3 = P3_P2*P2_P1*P1
     # IsoThermal(62.5,0.03375,1.32,1e-9)
-
+    bingbomg=False
     
     
     
