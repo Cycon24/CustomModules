@@ -36,7 +36,7 @@ root = bisection(f,x1,x2,switch=0,tol=1.0e-9).
 Finds a root of f(x) = 0 by bisection.
 The root must be bracketed in (x1,x2).
 Setting switch = 1 returns root = None if
-f(x) increases upon bisection.
+f(x) increases upon bisection.S
 '''
 def bisection(f,x1,x2,switch=1,tol=1.0e-9):
     f1 = f(x1)
@@ -46,7 +46,7 @@ def bisection(f,x1,x2,switch=1,tol=1.0e-9):
     if f2 == 0.0: return x2
     
     if np.sign(f1) == np.sign(f2):
-        error.err('Root is not bracketed')
+        raise ValueError('Root is not bracketed')
     n = int(math.ceil(math.log(abs(x2 - x1)/tol)/math.log(2.0)))
     
     for i in range(n):
@@ -71,7 +71,7 @@ def newtonRaphson(f,df,a,b,tol=1.0e-9):
     if fa == 0.0: return a
     fb = f(b)
     if fb == 0.0: return b
-    if np.sign(fa) == np.sign(fb): error.err('Root is not bracketed')
+    if np.sign(fa) == np.sign(fb): raise ValueError('Root is not bracketed')
     x = 0.5*(a + b)
     
     for i in range(100):

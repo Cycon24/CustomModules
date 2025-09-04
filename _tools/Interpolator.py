@@ -197,6 +197,22 @@ def plotPoly(xData,yData,coeff,xlab='x',ylab='y', title=''):
     plt.grid (True)
     plt.show()
 
+def linterp(x, x_array, y_array):
+    # Linearly interpolates the value of the target property(y) at x
+    # Linterp: y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+    
+    for idx, x_test in enumerate(x_array):
+        if x_test == x:
+            # Values are equal so just return value at h
+            return y_array[idx]
+        elif x_test >= x:
+            x1 = x_array[idx-1]
+            x2 = x_test
+            y1 = y_array[idx-1]
+            y2 = y_array[idx]
+            
+            return y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+    print('\nError: Target Value not found within Range.\n')
 
 # ------ Main Testing ---------
 

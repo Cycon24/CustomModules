@@ -8,3 +8,4 @@ import cantera as ct
 
 gas1 = ct.Solution('gri30.yaml')
 
+print(gas1())
