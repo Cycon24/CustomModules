@@ -3,4 +3,4 @@ import _aerodynamics.AirfoilTransformer
 import _aerodynamics.AtmosphereModule
 import _aerodynamics.GasDynamics
 import _aerodynamics.PLLT_LiftDistribution
-import _aerodynamics.Rotor_generator
+import _aerodynamics.RotorGenerator

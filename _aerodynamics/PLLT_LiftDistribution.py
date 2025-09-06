@@ -7,6 +7,13 @@ Created on Fri Mar 24 01:23:34 2023
 import numpy as np
 import scipy.integrate as spint 
 import matplotlib.pyplot as plt
+import os
+import sys
+
+# Add parent import capabilities
+parentdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if parentdir not in sys.path:
+    sys.path.insert(0, parentdir)
 import _tools.MatrixManipulator as MM
 import _tools.RootAlgorithms as RT
 import time
@@ -268,9 +275,9 @@ if __name__ == '__main__':
         plt.ylabel('Gamma')
         plt.grid()
     
-    if False:
+    if True:
         for n in range(5,50):
-            t, g, Cl = LiftDistribution(a, a0, b, 1, Vinf,S,n, 100)
+            t, y, g, Cl, _ = LiftDistribution(a, a0, b, 1, Vinf,S,n, 100)
         
             # ---- Plotting Gamma -----
             if True:
