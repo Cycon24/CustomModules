@@ -8,6 +8,14 @@ Created on Sat Sep  6 14:30:00 2025
 '''
 This module will be built using GMsh to generate NACA 4 and 5 digit airfoils
 '''
+import sys
+import os
+# Add parent import capabilities
+parentdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if parentdir not in sys.path:
+    sys.path.insert(0, parentdir)
+
+import _tools.CoordinateTransformer as CT
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -91,24 +99,24 @@ def generateNACA4(NACA4, c=1, numPoints=100):
     yu = yc(x) + np.multiply(yt(x), np.cos(theta))
     yl = yc(x) - np.multiply(yt(x), np.cos(theta))
     
-    points = np.zeros((len(beta)*2-2, 2))
+    points = np.zeros((len(beta)*2-2, 3))
     
     # for i, p in enumerate(points[:,0]):
     #     points[i, :] = np.array([xu[i]])
     
     # Set up the points on upper surface
     for i in range(0, len(xu)):
-        points[i, :] = xu[i], yu[i]
+        points[i, :] = xu[i], yu[i], 0
         
     for i in range(1, len(xl)-1):
-        points[i+len(xu)-1] = xl[len(xu)-1-i], yl[len(xu)-1-i]
+        points[i+len(xu)-1] = xl[len(xu)-1-i], yl[len(xu)-1-i], 0
         
     # reconnect to LE
     #points[-1, :] = xu[0], yu[0]
     
     return points #, xu,xl,yu,yl 
 
-def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100):
+def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang=None):
     '''
     Utilizes a gmsh object to generate the points, lines, and curve for a
     NACA 4-digit airfoil. 
@@ -144,10 +152,16 @@ def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100):
     af_line_tags = [] 
     
     pts = generateNACA4(NACA4, c, numPoints)
-    
+    if  rot_ang != None:
+        # Rotate each row point about its own (0,0,0) aka LE
+        for r in range(0,len(pts[:,0])):
+            pts[r,:] = CT.Rotate(pts[r,:], *rot_ang)
+        
+            
+            
     # make all the point objects
     for i in range(0, len(pts[:,0])):
-        af_point_tags.append(geo.addPoint(pts[i, 0] + dx, pts[i,1] + dy, dz))
+        af_point_tags.append(geo.addPoint(pts[i, 0] + dx, pts[i,1] + dy, pts[i,2] + dz))
     
     # Make all of the line objects 
     for i in range(0, len(af_point_tags) -1):
