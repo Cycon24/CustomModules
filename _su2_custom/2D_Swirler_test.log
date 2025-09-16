@@ -1,0 +1,264 @@
+
+-------------------------------------------------------------------------
+|    ___ _   _ ___                                                      |
+|   / __| | | |_  )   Release 8.3.0 "Harrier"                           |
+|   \__ \ |_| |/ /                                                      |
+|   |___/\___//___|   Suite (Computational Fluid Dynamics Code)         |
+|                                                                       |
+-------------------------------------------------------------------------
+| SU2 Project Website: https://su2code.github.io                        |
+|                                                                       |
+| The SU2 Project is maintained by the SU2 Foundation                   |
+| (http://su2foundation.org)                                            |
+-------------------------------------------------------------------------
+| Copyright 2012-2025, SU2 Contributors                                 |
+|                                                                       |
+| SU2 is free software; you can redistribute it and/or                  |
+| modify it under the terms of the GNU Lesser General Public            |
+| License as published by the Free Software Foundation; either          |
+| version 2.1 of the License, or (at your option) any later version.    |
+|                                                                       |
+| SU2 is distributed in the hope that it will be useful,                |
+| but WITHOUT ANY WARRANTY; without even the implied warranty of        |
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU      |
+| Lesser General Public License for more details.                       |
+|                                                                       |
+| You should have received a copy of the GNU Lesser General Public      |
+| License along with SU2. If not, see <http://www.gnu.org/licenses/>.   |
+-------------------------------------------------------------------------
+
+Parsing config file for zone 0
+
+----------------- Physical Case Definition ( Zone 0 ) -------------------
+Compressible Euler equations.
+Mach number: 0.3.
+Angle of attack (AoA): 0 deg, and angle of sideslip (AoS): 0 deg.
+No restart solution, use the values at infinity (freestream).
+Dimensional simulation.
+The reference area is 0.0833333 ft^2.
+The semi-span will be computed using the max y(3D) value.
+The reference length is 0.0833333 ft.
+Reference origin for moment evaluation is (0, 0, 0).
+Surface(s) where the force coefficients are evaluated: Airfoils.
+
+Surface(s) plotted in the output file: Airfoils.
+Input mesh file name: swirler_n8_c2_AoA20_NACA0012.su2
+
+--------------- Space Numerical Integration ( Zone 0 ) ------------------
+Jameson-Schmidt-Turkel scheme (2nd order in space) for the flow inviscid terms.
+JST viscous coefficients (2nd & 4th): 0.5, 0.02.
+The method includes a grid stretching correction (p = 0.3).
+Gradient for viscous and source terms: inverse-distance weighted Least-Squares.
+
+--------------- Time Numerical Integration  ( Zone 0 ) ------------------
+Local time stepping (steady state simulation).
+Euler implicit method for the flow equations.
+FGMRES is used for solving the linear system.
+Using a ILU(0) preconditioning.
+Convergence criteria of the linear solver: -10.
+Max number of linear iterations: 10.
+No CFL adaptation.
+Courant-Friedrichs-Lewy number:      0.5
+
+------------------ Convergence Criteria  ( Zone 0 ) ---------------------
+Maximum number of solver subiterations: 500.
+Begin convergence monitoring at iteration 10.
+Residual minimum value: 1e-8.
+Cauchy series min. value: 1e-06.
+Number of Cauchy elements: 100.
+Begin windowed time average at iteration 0.
+
+-------------------- Output Information ( Zone 0 ) ----------------------
+File writing frequency: 
++------------------------------------+
+|                     File| Frequency|
++------------------------------------+
+|                  RESTART|       250|
+|                 PARAVIEW|       250|
+|              SURFACE_CSV|       250|
++------------------------------------+
+Writing the convergence history file every 1 inner iterations.
+Writing the screen convergence history every 1 inner iterations.
+The tabular file format is CSV (.csv).
+Convergence history file name: history.
+Forces breakdown file name: forces_breakdown.dat.
+Surface file name: surface_flow.
+Volume file name: flow.
+Restart file name: restart_flow.
+
+------------- Config File Boundary Information ( Zone 0 ) ---------------
++-----------------------------------------------------------------------+
+|                        Marker Type|                        Marker Name|
++-----------------------------------------------------------------------+
+|                         Euler wall|                           Airfoils|
++-----------------------------------------------------------------------+
+|                  Periodic boundary|                          Symmetry2|
+|                                   |                          Symmetry1|
++-----------------------------------------------------------------------+
+|                     Inlet boundary|                              Inlet|
++-----------------------------------------------------------------------+
+|                    Outlet boundary|                             Outlet|
++-----------------------------------------------------------------------+
+
+-------------------- Output Preprocessing ( Zone 0 ) --------------------
+
+WARNING: SURFACE_PRESSURE_DROP can only be computed for at least 2 surfaces (outlet, inlet, ...)
+
+  Info: Ignoring the following screen output fields:
+  CAUCHY_SENS_PRESS, CAUCHY_DRAG, RMS_ADJ_DENSITY, RMS_ADJ_ENERGY
+Screen output fields: INNER_ITER, WALL_TIME, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, LIFT, DRAG
+History output group(s): ITER, RMS_RES
+Convergence field(s): RMS_DENSITY
+Warning: No (valid) fields chosen for time convergence monitoring. Time convergence monitoring inactive.
+Volume output fields: COORDINATES, SOLUTION, PRIMITIVE
+
+------------------- Geometry Preprocessing ( Zone 0 ) -------------------
+Two dimensional problem.
+39694 grid points.
+77744 volume elements.
+5 surface markers.
+1584 boundary elements in index 0 (Marker = Airfoils).
+13 boundary elements in index 1 (Marker = Inlet).
+24 boundary elements in index 2 (Marker = Symmetry1).
+24 boundary elements in index 3 (Marker = Symmetry2).
+13 boundary elements in index 4 (Marker = Outlet).
+77744 triangles.
+Setting point connectivity.
+Renumbering points (Reverse Cuthill McKee Ordering).
+Recomputing point connectivity.
+Setting element connectivity.
+Checking the numerical grid orientation.
+All volume elements are correctly oriented.
+All surface elements are correctly oriented.
+Identifying edges and vertices.
+Setting the control volume structure.
+Area of the computational grid: 0.51906.
+Searching for the closest normal neighbors to the surfaces.
+Storing a mapping from global to local point index.
+Compute the surface curvature.
+Max K: 93368.9. Mean K: 495.72. Standard deviation K: 6460.47.
+Checking for periodicity.
+Computing mesh quality statistics for the dual control volumes.
++--------------------------------------------------------------+
+|           Mesh Quality Metric|        Minimum|        Maximum|
++--------------------------------------------------------------+
+|    Orthogonality Angle (deg.)|        30.6829|        89.9645|
+|     CV Face Area Aspect Ratio|        1.00013|         1474.6|
+|           CV Sub-Volume Ratio|        1.00002|        10821.7|
++--------------------------------------------------------------+
+Finding max control volume width.
+Wetted area = 1.35943 ft.
+Area projection in the x-plane = 0.239083 ft, y-plane = 0.626949 ft.
+Max. coordinate in the x-direction = 0.494974 ft, y-direction = 0.519376 ft.
+Min. coordinate in the x-direction = 0.416587 ft, y-direction = 0.0313384 ft.
+Matching the periodic boundary points for marker pair 1.
+
+   Bad match for point 1588.	Nearest donor distance: 4.1666666666e-02.
+   Bad match for point 1589.	Nearest donor distance: 4.1679356804e-02.
+   Bad match for point 1590.	Nearest donor distance: 4.1704725496e-02.
+   Bad match for point 1591.	Nearest donor distance: 4.1742749625e-02.
+   Bad match for point 1592.	Nearest donor distance: 4.1793394650e-02.
+   Bad match for point 1593.	Nearest donor distance: 4.1856614758e-02.
+   Bad match for point 1594.	Nearest donor distance: 4.1932353072e-02.
+   Bad match for point 1595.	Nearest donor distance: 4.2020541903e-02.
+   Bad match for point 1596.	Nearest donor distance: 4.2121103048e-02.
+   Bad match for point 1597.	Nearest donor distance: 4.2233948131e-02.
+   Bad match for point 1598.	Nearest donor distance: 4.2358978977e-02.
+   Bad match for point 1599.	Nearest donor distance: 4.2496088029e-02.
+   Bad match for point 1600.	Nearest donor distance: 4.2645158788e-02.
+   Bad match for point 1601.	Nearest donor distance: 4.2806066286e-02.
+   Bad match for point 1602.	Nearest donor distance: 4.2978677577e-02.
+   Bad match for point 1603.	Nearest donor distance: 4.3162852247e-02.
+   Bad match for point 1604.	Nearest donor distance: 4.3358442944e-02.
+   Bad match for point 1605.	Nearest donor distance: 4.3565295907e-02.
+   Bad match for point 1606.	Nearest donor distance: 4.3783251511e-02.
+   Bad match for point 1607.	Nearest donor distance: 4.4012144811e-02.
+   Bad match for point 1608.	Nearest donor distance: 4.4251806081e-02.
+   Bad match for point 1609.	Nearest donor distance: 4.4502061350e-02.
+   Bad match for point 1610.	Nearest donor distance: 4.4762732937e-02.
+   Bad match for point 1585.	Nearest donor distance: 4.5033639960e-02.
+   Bad match for point 1586.	Nearest donor distance: 3.6742813126e-02.
+   Bad match for point 1623.	Nearest donor distance: 3.6410271194e-02.
+   Bad match for point 1624.	Nearest donor distance: 3.6089320482e-02.
+   Bad match for point 1625.	Nearest donor distance: 3.5780272914e-02.
+   Bad match for point 1626.	Nearest donor distance: 3.5483439508e-02.
+   Bad match for point 1627.	Nearest donor distance: 3.5199129270e-02.
+   Bad match for point 1628.	Nearest donor distance: 3.4927648016e-02.
+   Bad match for point 1629.	Nearest donor distance: 3.4669297123e-02.
+   Bad match for point 1630.	Nearest donor distance: 3.4424372217e-02.
+   Bad match for point 1631.	Nearest donor distance: 3.4193161812e-02.
+   Bad match for point 1632.	Nearest donor distance: 3.3975945893e-02.
+   Bad match for point 1633.	Nearest donor distance: 3.3772994485e-02.
+   Bad match for point 1634.	Nearest donor distance: 3.3584566191e-02.
+   Bad match for point 1635.	Nearest donor distance: 3.3410906729e-02.
+   Bad match for point 1636.	Nearest donor distance: 3.3252247491e-02.
+   Bad match for point 1637.	Nearest donor distance: 3.3108804123e-02.
+   Bad match for point 1638.	Nearest donor distance: 3.2980775162e-02.
+   Bad match for point 1639.	Nearest donor distance: 3.2868340734e-02.
+   Bad match for point 1640.	Nearest donor distance: 3.2771661347e-02.
+   Bad match for point 1641.	Nearest donor distance: 3.2690876783e-02.
+   Bad match for point 1642.	Nearest donor distance: 3.2626105111e-02.
+   Bad match for point 1643.	Nearest donor distance: 3.2577441845e-02.
+   Bad match for point 1644.	Nearest donor distance: 3.2544959242e-02.
+   Bad match for point 1645.	Nearest donor distance: 3.2528705778e-02.
+   Bad match for point 1587.	Nearest donor distance: 5.0804787896e-02. Matched 50 points with a max distance of: 0.0000000000e+00.
+
+
+ !!! Warning !!!
+Bad matches found. Computation will continue, but be cautious.
+Computing wall distances.
+
+-------------------- Solver Preprocessing ( Zone 0 ) --------------------
+Inviscid flow: Computing density based on free-stream
+temperature and pressure using the ideal gas law.
+Force coefficients computed using free-stream values.
+
+-- Models:
++------------------------------------------------------------------------------+
+|          Viscosity Model|        Conductivity Model|              Fluid Model|
++------------------------------------------------------------------------------+
+|                        -|                         -|             STANDARD_AIR|
++------------------------------------------------------------------------------+
+-- Fluid properties:
++------------------------------------------------------------------------------+
+|                  Name|    Dim. value|    Ref. value|      Unit|Non-dim. value|
++------------------------------------------------------------------------------+
+|          Gas Constant|       1716.49|             1|lbf.ft/slug.R|       1716.49|
+|      Spec. Heat Ratio|             -|             -|         -|           1.4|
++------------------------------------------------------------------------------+
+-- Initial and free-stream conditions:
++------------------------------------------------------------------------------+
+|                  Name|    Dim. value|    Ref. value|      Unit|Non-dim. value|
++------------------------------------------------------------------------------+
+|       Static Pressure|       2116.22|             1|       psf|       2116.22|
+|               Density|   0.000742695|             1| slug/ft^3|   0.000742695|
+|           Temperature|          1660|             1|         R|          1660|
+|          Total Energy|   7.30294e+06|             1|  ft^2/s^2|   7.30294e+06|
+|            Velocity-X|       599.184|             1|      ft/s|       599.184|
+|            Velocity-Y|             0|             1|      ft/s|             0|
+|    Velocity Magnitude|       599.184|             1|      ft/s|       599.184|
++------------------------------------------------------------------------------+
+|           Mach Number|             -|             -|         -|           0.3|
++------------------------------------------------------------------------------+
+Initialize Jacobian structure (Euler). MG level: 0.
+
+------------------- Numerics Preprocessing ( Zone 0 ) -------------------
+
+----------------- Integration Preprocessing ( Zone 0 ) ------------------
+
+------------------- Iteration Preprocessing ( Zone 0 ) ------------------
+Euler/Navier-Stokes/RANS fluid iteration.
+
+------------------------------ Begin Solver -----------------------------
+
+Simulation Run using the Single-zone Driver
+WARNING: SU2 was not compiled for an AVX-capable architecture. Performance could be better,
+         see https://su2code.github.io/docs_v7/Build-SU2-Linux-MacOS/#compiler-optimizations
+
+
+Error in "void CSolver::SetResidual_RMS(const CGeometry*, const CConfig*)": 
+-------------------------------------------------------------------------
+SU2 has diverged (NaN detected).
+------------------------------ Error Exit -------------------------------
+
+
