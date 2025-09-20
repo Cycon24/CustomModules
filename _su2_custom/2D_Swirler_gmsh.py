@@ -21,21 +21,21 @@ import traceback
 #  Define Mesh Options
 # =============================================================================
 # Swirler Options
-airfoil = "0012" # Airfoil of the blades
-num_Blades = 1   # Number of blades on the swirler
+airfoil = "8412" # Airfoil of the blades
+num_Blades = 6   # Number of blades on the swirler
 chord = 2        # in, chord length of airfoil 
-blade_AoA = 20   # deg, angle of attack of airfoils relative to the axial direction
+blade_AoA = 10   # deg, angle of attack of airfoils relative to the axial direction
 cross_sec_rad = 1 # in
 
 # Tunnel Options
 L_swirler = 2 # in
-L_upstream = 5 # in 
-L_downstream = 5 # in 
+L_upstream = 8 # in 
+L_downstream = 12 # in 
 L_tot = L_swirler + L_downstream + L_upstream
 
 # Mesh Options
 meshName = f"swirler_n{num_Blades}_c{chord}_AoA{blade_AoA}_NACA{airfoil}"
-point_mesh_size = 0.5 
+point_mesh_size = 0.1
 
 
 # =============================================================================
@@ -83,6 +83,51 @@ def fix_triangle_orientation():
     )
     return flipped
 
+
+def periodic_curve_check(sym1, sym2, period):
+    """
+    sym1: tag of bottom curve
+    sym2: tag of top curve
+    period: translation distance in y (your 2*pi*radius)
+    """
+    # 1) Get node ids and coords on each curve (dim=1)
+    n1, c1, _ = gmsh.model.mesh.getNodes(dim=1, tag=sym1, includeBoundary=True)
+    n2, c2, _ = gmsh.model.mesh.getNodes(dim=1, tag=sym2, includeBoundary=True)
+
+    # 2) Basic count check
+    if len(n1) != len(n2):
+        print(f"[FAIL] Node count mismatch: {len(n1)} vs {len(n2)}")
+        return False
+
+    # 3) Build coordinate arrays
+    p1 = np.array(c1).reshape(-1, 3)  # (N,3)
+    p2 = np.array(c2).reshape(-1, 3)
+
+    # 4) Sort nodes along x to ensure consistent ordering (robust against tag scrambling)
+    i1 = np.lexsort((p1[:,1], p1[:,0]))   # sort by x then y
+    i2 = np.lexsort((p2[:,1], p2[:,0]))
+
+    p1s = p1[i1]
+    p2s = p2[i2]
+
+    # 5) Apply periodic translation to sym1 nodes and compare to sym2
+    p1s_shift = p1s.copy()
+    p1s_shift[:,1] += period  # y-translation
+
+    d = np.linalg.norm(p1s_shift - p2s, axis=1)
+    print(f"[INFO] periodic max |Δ| = {d.max():.3e}, mean |Δ| = {d.mean():.3e}")
+
+    # 6) Orientation hint: check monotonic direction
+    dx1 = np.sign((p1s[-1,0] - p1s[0,0]) + 1e-15)
+    dx2 = np.sign((p2s[-1,0] - p2s[0,0]) + 1e-15)
+    if dx1 != dx2:
+        print("[WARN] Curves sorted opposite along x; consider reversing one.")
+        # If you need to reverse in your API version: gmsh.model.mesh.reverse([(1, sym2)])
+
+    ok = d.max() < 1e-10
+    print("[PASS]" if ok else "[FAIL]", "Periodic point match")
+    return ok
+
 # =============================================================================
 # Start GMSH Operations
 # =============================================================================
@@ -105,8 +150,8 @@ try:
     all_af_lines = []
     for i in range(0, num_Blades):
         # generate airfoil curve
-        rotation_angles = [0, 0, blade_AoA]
-        afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo, airfoil, dx=L_upstream, dy=LE_dist*(1/2 + i), dz=0,c=chord,numPoints=25, rot_ang=rotation_angles)
+        rotation_angles = [0, 0, -blade_AoA]
+        afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo, airfoil, dx=L_upstream, dy=LE_dist*(1/2 + i), dz=0,c=chord,numPoints=40, rot_ang=rotation_angles)
         
         af_curves.append(afcurve)
         all_af_lines.extend(af_line_tags)
@@ -118,18 +163,60 @@ try:
     p3 = geo.addPoint(L_tot, cross_circ,0, ms)
     p4 = geo.addPoint(0, cross_circ, 0, ms)
     
-    # Add tunnel lines
-    sym1 = geo.addSpline([p1, p2])
+    # Add Inlet/Outlet lines
     outlet = geo.addLine(p2, p3)
-    sym2 = geo.addSpline([p3, p4])
     inlet = geo.addLine(p4, p1)
     
+    # Make bottom as a true line
+    sym1 = geo.addLine(p1, p2)
+    sym2 = geo.addLine(p3, p4)
     geo.synchronize()
     
-    gmsh.model.mesh.setTransfiniteCurve(sym1, 100)
-    gmsh.model.mesh.setTransfiniteCurve(sym2, 100)
+    # Make top as an exact copy, then translate it by the period
+    # copied = gmsh.model.geo.copy([(1, sym1)])     # returns [(1, newTag)]
+    # sym2 = copied[0][1]
+    # gmsh.model.geo.translate([(1, sym2)], 0.0, cross_circ, 0.0)
+    # geo.synchronize()
     
-    geo.synchronize()
+  
+    
+# # =============================================================================
+# #     From GPT
+# # =============================================================================
+#     # Force both symmetry curves to have the same discretization
+#     nDiv = 40
+#     gmsh.model.mesh.setTransfiniteCurve(sym1, nDiv)
+#     gmsh.model.mesh.setTransfiniteCurve(sym2, nDiv)
+    
+#     # # Get endpoints of both curves
+#     # bnd_sym1 = gmsh.model.getBoundary([(1, sym1)], oriented=False)
+#     # bnd_sym2 = gmsh.model.getBoundary([(1, sym2)], oriented=False)
+    
+#     # p1_tag = bnd_sym1[0][1]
+#     # p2_tag = bnd_sym2[0][1]
+    
+#     # x1, y1, z1 = gmsh.model.getValue(0, p1_tag, [])
+#     # x2, y2, z2 = gmsh.model.getValue(0, p2_tag, [])
+    
+#     # # Reverse sym2 if its orientation doesn't match sym1
+#     # if abs(x1 - x2) > 1e-12 or abs(y1 - y2) > 1e-12:
+#     #     gmsh.model.mesh.reverse([(1, sym2)])
+    
+#     # gmsh.model.geo.synchronize()
+    
+#     # Apply periodicity with translation
+#     transform = [
+#         1, 0, 0, 0,
+#         0, 1, 0, cross_circ,
+#         0, 0, 1, 0,
+#         0, 0, 0, 1
+#     ]
+#     gmsh.model.mesh.setPeriodic(1, [sym2], [sym1], transform)
+
+# # =============================================================================
+# #     
+# # =============================================================================
+#     geo.synchronize()
     # Make lines into a curve loop
     curve1 = geo.addCurveLoop([sym1, outlet, sym2, inlet])
 
@@ -155,6 +242,9 @@ try:
     print("Generating Mesh")
     gmsh.model.mesh.generate(2) # Geneerate a 2D mesh
     
+    # Check sym
+    _ = periodic_curve_check(sym1, sym2, period=2*np.pi*cross_sec_rad)
+    
     # Fix mesh (broken)
     # flipped_count = fix_triangle_orientation()
     # print(f"Corrected {flipped_count} flipped triangles before writing SU2.")
@@ -171,10 +261,9 @@ try:
     # print(f"Fixed mesh written to {outfile}")
     
     
-    
-    # Run the GUI to visualize the created mesh
+   # Run the GUI to visualize the created mesh
     # if '-nopopup' not in sys.argv:
-    #     gmsh.fltk.run()
+    gmsh.fltk.run()
         
     
 except Exception as e:
