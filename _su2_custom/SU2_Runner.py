@@ -30,7 +30,6 @@ def basic_CFD_run(cfg_filename: str, cfg_filepath: str, save_output: bool = Fals
             if cfg_filepath
             else cfg_filename[:-4] + ".log"
         )
-
         # Open the log file in write mode; append total time at the end.
         with open(log_file, "w", encoding="utf-8", errors="replace") as f:
             process = subprocess.Popen(
