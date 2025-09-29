@@ -116,7 +116,7 @@ def generateNACA4(NACA4, c=1, numPoints=100):
     
     return points #, xu,xl,yu,yl 
 
-def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang=None):
+def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang=None, mesh_size=0):
     '''
     Utilizes a gmsh object to generate the points, lines, and curve for a
     NACA 4-digit airfoil. 
@@ -161,7 +161,7 @@ def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang
             
     # make all the point objects
     for i in range(0, len(pts[:,0])):
-        af_point_tags.append(geo.addPoint(pts[i, 0] + dx, pts[i,1] + dy, pts[i,2] + dz))
+        af_point_tags.append(geo.addPoint(pts[i, 0] + dx, pts[i,1] + dy, pts[i,2] + dz, mesh_size))
     
     # Make all of the line objects 
     for i in range(0, len(af_point_tags) -1):
