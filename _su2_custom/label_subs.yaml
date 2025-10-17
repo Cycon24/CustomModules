@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+#"""
+#Created on Wed Oct  1 11:28:02 2025
+
+#@author: BriceM
+# From GPT
+#"""
+
+# label_subs.yaml
+params:
+    AoA:
+      symbol: "\\alpha"          # math symbol for parameter
+      wrap_math: true            # wrap each component in $...$
+      numeric:
+        fmt: ".0f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: "^\\circ"         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
+        
+    NACA:
+      symbol: ""          # math symbol for parameter
+      wrap_math: false            # wrap each component in $...$
+      numeric:
+        fmt: ".0f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: ""         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
+      
+    nBlades:
+      symbol: "n"          # math symbol for parameter
+      wrap_math: false            # wrap each component in $...$
+      numeric:
+        fmt: ".0f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: ""         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
+
+    Radius:
+      symbol: "R"          # math symbol for parameter
+      wrap_math: false            # wrap each component in $...$
+      numeric:
+        fmt: ".2f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: " [in]"         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
+          
+    Chord:
+      symbol: "c"          # math symbol for parameter
+      wrap_math: false            # wrap each component in $...$
+      numeric:
+        fmt: ".2f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: " [in]"         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
+          
+    Re:
+      symbol: "\\mathrm{Re}"
+      wrap_math: true
+      numeric:
+        fmt: ".2e"
+        units: ""                # none
+      string:
+        map: {}                  # or omit
+
+# Optional defaults if a param is missing keys
+defaults:
+  wrap_math: true
+  string_mode: "mathrm"        # wrap string values as \mathrm{value}
+  joiner: ";\\ "               # join multiple components with a semicolon and space inside math

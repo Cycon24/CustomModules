@@ -43,7 +43,7 @@ class SwirlerMeshGenerator():
         self.GenBL = kwargs.get("GenBL", False)
         if self.GenBL:
             self.BL_nLayers     = kwargs.get("BL_nLayers", 20)     # number of prism layers
-            self.BL_Growth      = kwargs.get("BL_Growth", 1.20)   # layer growth ratio (1.15–1.25)
+            self.BL_BetaCoef      = kwargs.get("BL_BetaCoef", 1.20)   # layer growth ratio (1.15–1.25)
             self.BL_Quad        = kwargs.get("BL_Quad", 1)       # 1 = request quads in BL
             self.BL_Factor      = kwargs.get("BL_Factor", 1.2)    # total BL thickness ~ BL_factor * laminar BL estimate
             self.BL_h1          = kwargs.get("BL_h1", 1e-5) # First BL height
@@ -53,6 +53,7 @@ class SwirlerMeshGenerator():
         if self.GenFan_TE:
             self.fanLength = kwargs.get("TEF_Length")
             self.fanMinSize = kwargs.get("TEF_minSize")
+            self.TEF_FanMultFactor = kwargs.get("TEF_FanMultFactor")
              
         
         
@@ -135,7 +136,7 @@ class SwirlerMeshGenerator():
                 for i in range(0, self.numBlades):
                     # generate airfoil curve
                     rotation_angles = [0, 0, -self.BladeAoA]
-                    dxdydz = [self.L_Upstream, (LE_dist*(1/2 + i)), 0] # Add AoA adjustment on dy:  - (chord/2)*np.sin(np.deg2rad(-blade_AoA))
+                    dxdydz = [self.L_Upstream, (LE_dist*(1/2 + i)) - (self.chord/2.5)*np.sin(np.deg2rad(-self.BladeAoA)), 0]  
                     afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo,
                                                                                  self.AirfoilNACA,
                                                                                  dxdydz[0], dxdydz[1], dxdydz[2],
@@ -149,7 +150,7 @@ class SwirlerMeshGenerator():
                     all_af_pts.extend(af_point_tags)
             else:
                 rotation_angles = [0, 0, -self.BladeAoA]
-                dxdydz = [self.L_Upstream, LE_dist/2, 0] # Add AoA adjustment on dy:  - (chord/2)*np.sin(np.deg2rad(-blade_AoA))
+                dxdydz = [self.L_Upstream, LE_dist/2 - (self.chord/2.5)*np.sin(np.deg2rad(-self.BladeAoA)), 0] # Add AoA adjustment on dy:  - (chord/2)*np.sin(np.deg2rad(-blade_AoA))
                 afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo,
                                                                              self.AirfoilNACA,
                                                                              dxdydz[0], dxdydz[1], dxdydz[2],
@@ -204,7 +205,7 @@ class SwirlerMeshGenerator():
             # Apply periodicity with translation
             transform = [
                 1, 0, 0, 0,
-                0, 1, 0, 2*np.pi*self.Radius,
+                0, 1, 0, y_t,
                 0, 0, 1, 0,
                 0, 0, 0, 1
             ]
@@ -229,6 +230,21 @@ class SwirlerMeshGenerator():
         # =============================================================================
         #     Final defs and saves
         # =============================================================================
+            # Set curves as transfinite based on point meshg size to force periodic
+            nx = max(2, int(np.ceil(L_tot / self.point_mesh_size)))
+            ny = max(2, int(np.ceil(self.PeriodicOffset / self.point_mesh_size)))
+            
+            
+            gmsh.model.mesh.setTransfiniteCurve(sym1, nx)
+            gmsh.model.mesh.setTransfiniteCurve(sym2, nx)
+            gmsh.model.mesh.setTransfiniteCurve(inlet, ny)
+            gmsh.model.mesh.setTransfiniteCurve(outlet, ny)
+            gmsh.model.geo.synchronize()
+            
+            gmsh.model.mesh.setTransfiniteSurface(flowsurf)  # you already have this
+            gmsh.model.geo.synchronize()
+    
+    
             gmsh.model.geo.mesh.setRecombine(2, flowsurf)
             gmsh.model.mesh.setTransfiniteSurface(flowsurf)
             geo.synchronize()
@@ -306,7 +322,7 @@ class SwirlerMeshGenerator():
         gmsh.model.mesh.field.setNumbers(bl,"CurvesList", BL_curves) 
         # gmsh.model.mesh.field.setNumber(bl, 'hwall_n', self.BL_h1)
         gmsh.model.mesh.field.setNumber(bl, 'BetaLaw', 1)
-        gmsh.model.mesh.field.setNumber(bl, 'Beta', self.BL_Growth)
+        gmsh.model.mesh.field.setNumber(bl, 'Beta', self.BL_BetaCoef)
         # gmsh.model.mesh.field.setNumber(bl, "Thickness",  self.BL_Thickness)  
         gmsh.model.mesh.field.setNumber(bl, "NbLayers", self.BL_nLayers)
         # gmsh.model.mesh.field.setNumber(bl, "Ratio", self.BL_Growth)   # growth ratio between layers
@@ -373,7 +389,7 @@ class SwirlerMeshGenerator():
         gmsh.model.mesh.field.setNumber(thr,  "DistMax", te_DistMax)
       
         
-        gmsh.option.setNumber('Mesh.BoundaryLayerFanElements', self.BL_nLayers*6)
+        gmsh.option.setNumber('Mesh.BoundaryLayerFanElements', self.BL_nLayers*self.TEF_FanMultFactor)
         
         # Combine BL and thr/ist fields
         minField = gmsh.model.mesh.field.add("Min")
@@ -398,14 +414,14 @@ if __name__ == "__main__":
     "FileLocation": 'TestMeshes',
     "NACA": "8412",
     "FileType": "BOTH",
-    "GenPointSize": 0.5,
+    "GenPointSize": 0.1,
     "AF_PointSize": 0,
     "AF_numPoints": 100,
     "FullMesh": False,
 
     # Tunnel Settings
     "numBlades": 6,
-    "BladeAoA": 10,
+    "BladeAoA": 20,
     "Radius": 1,
     "chord": 2,
     "L_Upstream": 5,      # why: default derives from 5 * chord; chord default is 1
@@ -414,15 +430,16 @@ if __name__ == "__main__":
     # Boundary-Layer Settings (used only if GenBL is True)
     "GenBL": True,
     "BL_nLayers": 20,
-    "BL_Growth": 1.005,
+    "BL_BetaCoef": 1.01,
     "BL_Quad": 1,
-    "BL_Factor": 1.1,
+    # "BL_Factor": 1.1,
     "BL_h1": 1e-4,
-    "BL_Thickness": 8,
+    "BL_Thickness": 5,
 
     # Trailing-Edge Fan Settings (used only if GenFan_TE is True)
     "GenFan_TE": True,
-    "TEF_Length": 0.7,   # why: no default in source; explicit sentinel
+    "TEF_Length": 4,   # why: no default in source; explicit sentinel
+    "TEF_FanMultFactor": 2,
     "TEF_minSize": 5e-3,
     
     # Optional run settings
@@ -431,6 +448,7 @@ if __name__ == "__main__":
     }
     
     meshGen = SwirlerMeshGenerator(**mesh_params)
-    meshGen.GenerateMesh(True)
+    meshGen.GenerateMesh(OpenGMSHVisual=True)
+    meshGen.Exit()
  
     
