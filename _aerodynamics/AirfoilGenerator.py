@@ -93,11 +93,11 @@ def generateNACA4(NACA4, c=1, numPoints=100):
     
     theta = np.atan(dyc_dx(x))
     
-    xu = x - np.multiply(yt(x), np.sin(theta))
-    xl = x + np.multiply(yt(x), np.sin(theta))
+    xu = c*(x - np.multiply(yt(x), np.sin(theta)))
+    xl = c*(x + np.multiply(yt(x), np.sin(theta)))
     
-    yu = yc(x) + np.multiply(yt(x), np.cos(theta))
-    yl = yc(x) - np.multiply(yt(x), np.cos(theta))
+    yu = c*(yc(x) + np.multiply(yt(x), np.cos(theta)))
+    yl = c*(yc(x) - np.multiply(yt(x), np.cos(theta)))
     
     points = np.zeros((len(beta)*2-2, 3))
     
@@ -177,14 +177,16 @@ def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang
     
 
 if __name__=="__main__":
-    pts = generateNACA4("8412")
-    
+    pts = generateNACA4("8412", c=1)
+    pts2 = generateNACA4("8412", c=2)
+    print("plotting")
     plt.figure()
     # plt.plot(xU, yU)
     # plt.plot(xL, yL)
     plt.plot(pts[:,0], pts[:,1])
+    plt.plot(pts2[:,0], pts2[:,1])
     plt.ylim([-0.6,0.6])
-    plt.xlim([-0.1,1.1])
+    plt.xlim([-0.1,2.1])
     plt.grid()
     plt.show()
     
