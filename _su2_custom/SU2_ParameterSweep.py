@@ -68,7 +68,7 @@ RANS = True
 SU2_RUNS_PATH = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\"
 
 # if RUN_SWEEP, then we need to set what parameter to sweep
-sweep_param = {"NACA": ["2412", "4412", "6412", "8412"]}
+sweep_param = {"AoA": [3.0, 4.0]}
 ''' 
 Currently Supported params:
     - Angle of Attack ("AoA")

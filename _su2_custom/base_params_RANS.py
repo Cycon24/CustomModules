@@ -9,7 +9,7 @@ mesh_params = {
 # Core
 "MeshName": "swirlerMeshTest",
 "FileLocation": 'meshs',
-"NACA": "6412",
+"NACA": "6406",
 "FileType": "BOTH",
 "GenPointSize": 0.05,
 "AF_PointSize": 0,
