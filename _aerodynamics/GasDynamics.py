@@ -566,6 +566,8 @@ def A_ratio(M, Gamma=1.4):
         A/A*: Area ratio.
 
     '''
+    if abs(M) < 1e-6: return None
+    
     A_At = (1/M)*((1 + M**2*(Gamma-1)/2) /
                   ((Gamma+1)/2))**((Gamma+1)/(2*Gamma-2))
     return A_At
@@ -664,7 +666,7 @@ def Mach_at_mdot(m_dot, Po, To, A, Gamma=1.4, R=287, gc=1, forceSupersonic=False
         M_low, M_high = rt.rootsearch(mdot_f, low_r, high_r, 10**(i-6))
         if type(M_low) == float:
             break 
-        print('Increasing step size')
+        # print('[Warning]\t Increasing step size past M=3 for Mach Search')
     if type(M_low) == float:
         Mach = (M_low + M_high)/2
     else: 
