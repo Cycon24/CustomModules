@@ -91,7 +91,7 @@ def generateNACA4(NACA4, c=1, numPoints=100):
     beta = np.linspace(0, np.pi, 100, endpoint=True)
     x = (1-np.cos(beta))/2 
     
-    theta = np.atan(dyc_dx(x))
+    theta = np.arctan(dyc_dx(x))
     
     xu = c*(x - np.multiply(yt(x), np.sin(theta)))
     xl = c*(x + np.multiply(yt(x), np.sin(theta)))
