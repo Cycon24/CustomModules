@@ -9,35 +9,35 @@ mesh_params = {
 # Core
 "MeshName": "swirlerMeshTest",
 "FileLocation": 'meshs',
-"NACA": "4406",
+# "NACA": "4406",
 "FileType": "BOTH",
-"GenPointSize": 0.05,
-"AF_PointSize": 0,
-"AF_numPoints": 800,
-"FullMesh": False,
+# "GenPointSize": 0.05,
+# "AF_PointSize": 0,
+# "AF_numPoints": 800,
+# "FullMesh": False,
 
 # Tunnel Settings
-"numBlades": 6,
-"BladeAoA": 5,
-"Radius": 0.5,
-"chord": 1.267,
-"L_Upstream": 5,      # why: default derives from 5 * chord; chord default is 1
-"L_Downstream": 12,   # why: default derives from 10 * chord; chord default is 1
+# "numBlades": 6,
+# "BladeAoA": 5,
+# "Radius": 0.5,
+# "chord": 1.267,
+# "L_Upstream": 5,      # why: default derives from 5 * chord; chord default is 1
+# "L_Downstream": 12,   # why: default derives from 10 * chord; chord default is 1
 
 # Boundary-Layer Settings (used only if GenBL is True)
-"GenBL": True,
-"BL_nLayers": 30,
-"BL_BetaCoef": 1.005,
-"BL_Quad": 1,
-# "BL_Factor": 1.1,
-"BL_h1": 1e-4,
-"BL_Thickness": 5,
+# "GenBL": True,
+# "BL_nLayers": 30,
+# "BL_BetaCoef": 1.005,
+# "BL_Quad": 1,
+# # "BL_Factor": 1.1,
+# "BL_h1": 1e-4,
+# "BL_Thickness": 5,
 
-# Trailing-Edge Fan Settings (used only if GenFan_TE is True)
-"GenFan_TE": True,
-"TEF_Length": 4,   # why: no default in source; explicit sentinel
-"TEF_FanMultFactor": 2,
-"TEF_minSize": 5e-3
+# # Trailing-Edge Fan Settings (used only if GenFan_TE is True)
+# "GenFan_TE": True,
+# "TEF_Length": 4,   # why: no default in source; explicit sentinel
+# "TEF_FanMultFactor": 2,
+# "TEF_minSize": 5e-3
 
 }
 
@@ -82,12 +82,12 @@ cfg_params: dict[str, str] = {
     "PRANDTL_LAM": "0.72",
     
     # Boundary Conditions
-    "MARKER_PERIODIC": "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, -{}, 0.0)",
+    "MARKER_PERIODIC": "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (-60.0, 0.0, 0.0), (0.0, 0.0, 0.0)",
     "MARKER_INLET": "( Inlet, 1689.88, 2252.564, 1.0, 0.0, 0.0 )",
     "MARKER_OUTLET": "( Outlet, 2116.216 )",
-    "MARKER_HEATFLUX": "( Airfoils, 0.0)",
+    "MARKER_HEATFLUX": "( Airfoils, 0.0), (Walls, 0.0)",
     # Plotting Markers
-    "MARKER_PLOTTING": "( Airfoils, Outlet )",
+    "MARKER_PLOTTING": "( Airfoils )",
     "MARKER_MONITORING": "( Airfoils )",
 
     # Residuals
@@ -127,7 +127,7 @@ cfg_params: dict[str, str] = {
     "RK_ALPHA_COEFF": "( 0.66667, 0.66667, 1.000000 )",
     
     # Overall Convergence Params
-    "ITER": "10000",
+    "ITER": "5000",
     "CONV_STARTITER": "20",
     "CONV_RESIDUAL_MINVAL": "-9",
     "CONV_CAUCHY_ELEMS": "100",

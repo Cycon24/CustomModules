@@ -1,0 +1,46 @@
+input:
+  surface_csv: "entire_surface_restart.csv"
+  columns:
+    x: "x"
+    y: "y"
+    z: "z"
+    density: "Density"
+    momentum_x: "Momentum_x"
+    momentum_y: "Momentum_y"
+    momentum_z: "Momentum_z"
+    velocity_x: "Velocity_x"
+    velocity_y: "Velocity_y"
+    velocity_z: "Velocity_z"
+    mach: "Mach"
+    pressure: "Pressure"
+    temperature: "Temperature"
+
+geometry:
+  r_hub: 0.125
+  r_pipe: 2.0
+  L_tot:  24.0
+
+slices:
+  x_stations_in: [6.0, 12.0, 18.0]
+  dx_tolerance_in: null
+  min_points_per_slice: 3000
+  save_slice_csv: true
+
+contours:
+  variables: ["Mach","Vmag","Vx","Vr","Vtheta","Pressure","Temperature",
+              "Momentum_x","Momentum_r","Momentum_theta","alpha_deg"]
+  levels: 50
+
+radial_averages:
+  variables: ["Mach","Vx","Vtheta","alpha_deg","Pressure","Temperature"]
+  Nr_bins: 80
+  save_csv: true
+
+plotting:
+  units_yaml: "plot_units.yaml"
+  dpi: 250
+  cmap: "viridis"
+
+logging:
+  write_summary_txt: true
+  write_summary_json: true

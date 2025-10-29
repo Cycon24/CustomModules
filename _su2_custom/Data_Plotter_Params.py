@@ -29,7 +29,8 @@ LINE_PROBE_FILENAME = "probe_lines.csv"
 SURFACE_CSV_FILENAME = "entire_surface_restart.csv"
 HISTORY_FILENAME = "history.csv"
 
-Sweep_dir = ["PARAM_RANS_Sweep_01\\NACA_sweep"]
+base_filepath = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests"
+Sweep_dir = ["Pb_sweep"]
              # "PARAM_Sweeps_03_6406\\nBlades_sweep",
              # "PARAM_Sweeps_03_6406\\Radius_sweep",
              # "PARAM_Sweeps_02\\NACA_sweep",
@@ -42,7 +43,7 @@ Image_DPI = 600
 
 
 RESIDUALS_HEADERS = ['Time_Iter', 'Outer_Iter', 'Inner_Iter', 'rms[Rho]',
-       'rms[RhoU]', 'rms[RhoV]', 'rms[RhoE]', 'rms[nu]']
+       'rms[RhoU]', 'rms[RhoV]','rms[RhoW]', 'rms[RhoE]', 'rms[nu]']
 
 def _ensure_plots_dir(param_dir: Path) -> Path:
     plots_dir = param_dir / "Plots"
@@ -497,4 +498,4 @@ def main(
 
 if __name__ == "__main__":
     for sweep_dir in Sweep_dir:
-        main(sweep_dir, Image_Type, Image_DPI, log=False)
+        main(base_filepath + "\\" + sweep_dir, Image_Type, Image_DPI, log=False)

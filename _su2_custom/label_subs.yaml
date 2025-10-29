@@ -76,6 +76,18 @@ params:
         units: ""                # none
       string:
         map: {}                  # or omit
+        
+    Pb:
+      symbol: "P_b"          # math symbol for parameter
+      wrap_math: true            # wrap each component in $...$
+      numeric:
+        fmt: ".3f"               # Python format spec, e.g., .0f, .2f, .2e
+        units: "lbf/ft^2"         # appended in mathtext, e.g., ^\\circ for degrees
+      string:
+        # Optional mapping for non-numeric values
+        map:
+          off: "\\mathrm{off}"
+          on: "\\mathrm{on}"
 
 # Optional defaults if a param is missing keys
 defaults:

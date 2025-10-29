@@ -78,6 +78,6 @@ def basic_CFD_run(cfg_filename: str, cfg_filepath: str, save_output: bool = Fals
 
 if __name__ == "__main__":
     # Example usage (adjust paths as needed)
-    config_filename = "Rans_test.cfg"
-    config_filepath = os.getcwd()
+    config_filename = "3D_Swirler_test_RANS.cfg"
+    config_filepath = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests" #os.getcwd()
     basic_CFD_run(config_filename, config_filepath, save_output=True)

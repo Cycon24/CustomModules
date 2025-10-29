@@ -1,0 +1,26 @@
+title:
+  template: "{var}: {param} x={x_in:.2f} in"
+  template_multi: "{var}: {param}"
+
+units
+  Mach: ""
+  Vmag: "ft/s"
+  Vx: "ft/s"
+  Vr: "ft/s"
+  Vtheta: "ft/s"
+  Pressure: "psf"
+  Temperature: "R"
+  Momentum_x: "slug/(ft^2·s)"
+  Momentum_r: "slug/(ft^2·s)"
+  Momentum_theta: "slug/(ft^2·s)"
+  alpha_deg: "deg"
+
+limits:
+  yz:
+    y_in: null
+    z_in: null
+
+naming:
+  contours_dir: "Plots/Contours"
+  radial_dir:   "Plots/Radial"
+  probes_dir:   "Probes"

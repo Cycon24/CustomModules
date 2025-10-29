@@ -118,6 +118,8 @@ class SwirlerMeshGenerator():
             # Make an alias to speed up typing
             geo = gmsh.model.geo 
             
+        
+            
             # Define the wind tunnel rectangle, the width direction will be z-plane
             # Add tunnel points
             ms = self.point_mesh_size
@@ -183,7 +185,7 @@ class SwirlerMeshGenerator():
             # Generate space around the airfoils (Tunnel)
             y_t = 2*np.pi*self.Radius  if self.FullMesh else LE_dist # max y of tunnel
             self.PeriodicOffset = y_t
-            L_tot = self.L_Upstream + self.chord + self.L_Downstream # If AoA != 0, isnt quite accurate but oh well dont care
+            L_tot = self.L_Upstream + self.L_Downstream 
         
             # Add points
             p1 = geo.addPoint(0,0,0, ms)

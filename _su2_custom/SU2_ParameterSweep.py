@@ -47,10 +47,15 @@ SU2 Runner
 
 import base_params as params
 import base_params_RANS as paramsRANS
+import base_params_RANS_3D as paramsRANS_3D
+
 import GMSH_2D_Swirler_Generator as genSwirler 
+import GMSH_3D_Swirler_Generator as gen3DSwirler
+
 import SU2_Runner as su2run 
 import SU2_cfg_generator as su2cfg 
 import Parameter_Adjustor as PA 
+
 import Data_Processor as DP 
 import Data_Plotter_Params as DPP 
 import Data_Plotter_Sweep as DPS
@@ -64,11 +69,13 @@ RUN_MESH_ONLY = False
 RUN_SWEEP = True 
 RUN_DATA_PROCESSING = True 
 RANS = True
+RANS_3D = True
 
 SU2_RUNS_PATH = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\"
 
 # if RUN_SWEEP, then we need to set what parameter to sweep
-sweep_param = {"AoA": [3.0, 4.0]}
+P_atm = 2116.216 # lbf/ft^2
+sweep_param = {"Pb": [0.99*P_atm, 0.95*P_atm, 0.9*P_atm, 0.8*P_atm]}
 ''' 
 Currently Supported params:
     - Angle of Attack ("AoA")
@@ -76,6 +83,7 @@ Currently Supported params:
     - Number of Blades ("nBlades")
     - Airfoil Shape ("NACA") (valid inputs are currently only NACA 4-digit airfoils)
     - Chord length ("Chord")
+    - Back Pressure ("Pb") in lbf/ft^2 (1 atm is 2116.216)
     
 Whenever a new one is made need to update:
     - Parameter_Adjustor.py case structure
@@ -88,13 +96,16 @@ mshName = "RansMSH"
 cfgName = "Rans_test.cfg"
 
 # Set General Params (Sweep) 
-sweep_FilePath = SU2_RUNS_PATH + "PARAM_RANS_Sweep_01"
+sweep_FilePath = SU2_RUNS_PATH + "3D_Tests"
 
 # =============================================================================
 # Parameter Manual Adjustments (will be applied to ALL runs)
 # =============================================================================
 # Import base parameters
-if RANS:
+if RANS_3D:
+    cfg_params = paramsRANS_3D.cfg_params 
+    msh_params = paramsRANS_3D.mesh_params 
+elif RANS:
     cfg_params = paramsRANS.cfg_params 
     msh_params = paramsRANS.mesh_params 
 else:
@@ -102,7 +113,7 @@ else:
     msh_params = params.mesh_params 
 
 # Change params (if needed)
-cfg_params["ITER"] = 7500
+# cfg_params["ITER"] = 7500
 
 
 # =============================================================================
@@ -161,9 +172,19 @@ else:
         
         for val in sweep_param[key]:
             # Sweep through all values in the sweep. Each will get its own file as well
-            run_FilePath = param_FilePath + "\\" + key + f"_{val}"
-            mshName = "Mesh_" + key + f"_{val}" 
-            cfgName = "CFG_"+ key + f"_{val}.cfg" 
+            match val:
+                case int():
+                    endStr = f"_{val}"
+                case float():
+                    endStr = f"_{val:.0f}"
+                case str():
+                    endStr = "_" + val 
+                case _:
+                    endStr = f"_{val}"
+                    
+            run_FilePath = param_FilePath + "\\" + key + endStr
+            mshName = "Mesh_" + key + endStr 
+            cfgName = "CFG_"+ key + endStr + ".cfg" 
             
             # Set naming params
             sweep_msh_params["FileLocation"] = run_FilePath
@@ -174,16 +195,23 @@ else:
             # Make the adjustment
             sweep_cfg_params, sweep_msh_params = PA.AdjustParams(key, val, sweep_cfg_params, sweep_msh_params)
             
-            # Generate CFG Mesh file (need to use values calculated in mesh for cfg inputs)
-            swirler = genSwirler.SwirlerMeshGenerator(**sweep_msh_params)
-            SWIRLER_GEN_COMPLETE = swirler.GenerateMesh(OpenGMSHVisual= RUN_MESH_ONLY)
-            su2cfg.dict_to_cfg(sweep_msh_params, mshName+"_params.txt", run_FilePath)
-            
-            # Save cfg file
-            sweep_cfg_params["MARKER_PERIODIC"] = "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, -{}, 0.0)".format(swirler.PeriodicOffset)
-            CFG_GEN_COMPLETE = su2cfg.dict_to_cfg(sweep_cfg_params, cfgName, run_FilePath)
-            
-            
+            if not RANS_3D:
+                # Generate CFG Mesh file (need to use values calculated in mesh for cfg inputs)
+                swirler = genSwirler.SwirlerMeshGenerator(**sweep_msh_params)
+                SWIRLER_GEN_COMPLETE = swirler.GenerateMesh(OpenGMSHVisual= RUN_MESH_ONLY)
+                su2cfg.dict_to_cfg(sweep_msh_params, mshName+"_params.txt", run_FilePath)
+                
+                # Save cfg file
+                sweep_cfg_params["MARKER_PERIODIC"] = "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, -{}, 0.0)".format(swirler.PeriodicOffset)
+                CFG_GEN_COMPLETE = su2cfg.dict_to_cfg(sweep_cfg_params, cfgName, run_FilePath)
+            else:
+                # gen 3d mesh
+                SWIRLER_GEN_COMPLETE = gen3DSwirler.GenerateMesh3D(**sweep_msh_params)
+                su2cfg.dict_to_cfg(sweep_msh_params, mshName+"_params.txt", run_FilePath) 
+                
+                # save cfg file
+                CFG_GEN_COMPLETE = su2cfg.dict_to_cfg(sweep_cfg_params, cfgName, run_FilePath)
+                
             # Run CFD
             if SWIRLER_GEN_COMPLETE and CFG_GEN_COMPLETE and not RUN_MESH_ONLY:
                 print("# =============================================================================")

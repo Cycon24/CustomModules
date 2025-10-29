@@ -50,6 +50,10 @@ def AdjustParams(adj_param, adj_value, cfg_dict, msh_dict):
             case "Chord":
                 msh_dict['chord'] = val
                 
+            case "Pb":
+                # Backpressure
+                cfg_dict["MARKER_OUTLET"] = f"( Outlet, {val} )"
+                
             case _: 
                 # Default Case
                 raise ValueError("Adjust Parameter not Recognized")
