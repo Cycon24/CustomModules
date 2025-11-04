@@ -41,189 +41,7 @@ def calorically_imperfect_gas(Temp, Cv_perf, Cp_perf, gam_p):
     Gamma = 1  + (gam_p-1)/(1 + (gam_p - 1)*(T_frac*e_frac))
     return Gamma, Cp, Cv
 
-# =============================================================================
-#               Shock Deflection
-# =============================================================================
-def shockDeflection(Mach=None, Beta_deg=None, Theta_deg=None, Gamma=1.4):
-    '''
-    Outputs a dictionary containing the Mach number, Beta (shock angle), and Theta (deflection angle) for a shock deflection.
-    Any two iputs are needed to solve. Angles should be input in degrees
 
-    Parameters
-    ----------
-    Mach : Float, optional
-        Mach Number of Incoming Freestream Flow. The default is None.
-    Beta_deg : Float, optional
-        Shock angle [deg]. The default is None.
-    Theta_deg : TYPE, optional
-        Wedge angle (aka exit flow angle) [deg]. The default is None.
-    Gamma : Float, optional
-        Specific Heat Ratio. The default is 1.4.
-
-    Returns
-    -------
-    Dictionary
-        returns {'Mach'=M, 'Beta'=beta, 'Theta'=theta} in degrees.
-
-    '''
-    Beta = None
-    Theta = None
-    if Beta_deg != None:
-        Beta = np.radians(Beta_deg)
-    if Theta_deg != None:
-        Theta = np.radians(Theta_deg)
-
-    # -------------- Find Mach ------------------------------------------------------------------
-    if Mach == None and (Beta != None and Theta != None):
-        # Define functions internally to avoid the functions using globals.
-        # Allows for modularization of the overall functions
-        def F_M(x):
-            M = x
-            theta = Theta
-            beta = Beta
-            gam = Gamma
-            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
-                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
-            return F
-
-        def dF_M(x):
-            M = x
-            beta = Beta
-            gam = Gamma
-            dF_M = (4*(gam + 1)*M*(1/np.tan(beta))) / \
-                (M**2 * np.cos(2*beta) + gam * M**2 + 2)**2
-            return dF_M
-
-        # Find Mach Number
-        # Root search - Returns the lower and upper bounds of a root between start and end
-        low_r, high_r = rt.rootsearch(F_M, 0, 8, 0.01)
-
-        # Newton Raphson
-        root = rt.newtonRaphson(F_M, dF_M, low_r, high_r)
-
-        return {'Mach': root, 'Beta': np.degrees(Beta), 'Theta': np.degrees(Theta)}
-
-    # -------------- Find Beta ------------------------------------------------------------------
-    elif Beta == None and (Mach != None and Theta != None):
-        # Find Beta
-        def F_Beta(x):
-            M = Mach
-            theta = Theta
-            beta = x
-            gam = Gamma
-            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
-                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
-            return F
-
-        def dF_Beta(x):
-            M = Mach
-            beta = x
-            gam = Gamma
-            dF_B = (2*(gam*(M**4)*np.cos(2*beta) + 1/np.sin(beta)**2 *
-                       ((gam + 1)*M**2 + 2) + M**4 - 4*M**2))/((M**2)*np.cos(2*beta) + gam*M**2 + 2)**2
-            return dF_B
-
-        # Find Beta
-        # Root search
-        low_r, high_r = rt.rootsearch(F_Beta, 0, 2*np.pi, .01)
-
-        # Newton Raphson
-        root1 = rt.newtonRaphson(F_Beta, dF_Beta, low_r, high_r)
-
-        # Find second shock angle
-        low_r, high_r = rt.rootsearch(F_Beta, high_r, 2*np.pi, 0.01)
-
-        root2 = rt.newtonRaphson(F_Beta, dF_Beta, low_r, high_r)
-
-        return {'Mach': Mach, 'Weak Beta': np.degrees(root1), 'Strong Beta': np.degrees(root2), 'Theta': np.degrees(Theta)}
-
-    # -------------- Find Theta ------------------------------------------------------------------
-    elif Theta == None and (Beta != None and Mach != None):
-        # Find Theta
-
-        def F_Theta(x):
-            M = Mach
-            theta = x
-            beta = Beta
-            gam = Gamma
-            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
-                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
-            return F
-
-        def dF_Theta(x):
-            theta = x
-            dF_T = -(1/np.cos(theta))**2
-            return dF_T
-
-        # Find Theta
-        # Root search
-        low_r, high_r = rt.rootsearch(F_Theta,  0, 2*np.pi, .01)
-
-        # Newton Raphson
-        root = rt.newtonRaphson(F_Theta, dF_Theta, low_r, high_r)
-
-        return {'Mach': Mach, 'Beta': np.degrees(Beta), 'Theta': np.degrees(root)}
-
-    # -------------- Unsolvable  ------------------------------------------------------------------
-    else:
-        # More than one entry is None, shockDeflection unsolvable
-        print('\nError: Two values needed to solve the equation, less than two were supplied.\n')
-        return None
-
-
-def plotShockDeflection(M=None):
-    '''
-    Plots the shock deflection map at a given Mach number M
-    or for a range of Mach numbers from 0 to 15 (if M=None)
-
-    Parameters
-    ----------
-    M : Float, optional
-        Mach Number of Freestream Flow. The default is None.
-
-    Returns
-    -------
-    Matplotlib Figure.
-
-    '''
-    if M == None:
-        M = [0]
-        k = 0
-        incr = 0.01
-        step = incr
-        while M[k] <= 15:
-            M.append(M[k]+step)
-            step += incr + incr*k/3
-            k += 1
-    print(M)
-    if type(M) != list and type(M) != np.ndarray:
-        M = np.array([M])
-
-    M = np.array(M)
-    B = np.arange(1, 90, 0.5)
-
-    Matrix = np.zeros((np.size(B), 2, np.size(M)))
-
-    # Solve for theta for all of the Mach numbers from Beta range 0-90
-    for i, m in enumerate(M):
-        for j, b in enumerate(B):
-            res = shockDeflection(m, b, None)
-            if res['Theta'] < 80:
-                Matrix[j, 0, i] = res['Theta']
-            elif Matrix[j-1, 0, i] != 0:
-                Matrix[j, 0, i] = 0
-            else:
-                Matrix[j, 0, i] = None
-            Matrix[j, 1, i] = b
-
-    # Plotting
-    fig = plt.figure()
-    plt.plot(Matrix[:, 0, :], Matrix[:, 1, :])
-    plt.title('Shock Deflection Angle')
-    plt.xlabel('Theta (°)')
-    plt.ylabel('Beta (°)')
-    plt.grid()
-    return fig
 
 
 # =============================================================================
@@ -1134,6 +952,187 @@ def As_At_n(Ae_At, Pb_Po, Gamma=1.4, dx=1e-3, max_iter=30):
 #   To find property changes across oblique shock, use M1n and M2n
 #   - Stag Temperature stays constant
 
+def shockDeflection(Mach=None, Beta_deg=None, Theta_deg=None, Gamma=1.4):
+    '''
+    Outputs a dictionary containing the Mach number, Beta (shock angle), and Theta (deflection angle) for a shock deflection.
+    Any two iputs are needed to solve. Angles should be input in degrees
+
+    Parameters
+    ----------
+    Mach : Float, optional
+        Mach Number of Incoming Freestream Flow. The default is None.
+    Beta_deg : Float, optional
+        Shock angle [deg]. The default is None.
+    Theta_deg : TYPE, optional
+        Wedge angle (aka exit flow angle) [deg]. The default is None.
+    Gamma : Float, optional
+        Specific Heat Ratio. The default is 1.4.
+
+    Returns
+    -------
+    Dictionary
+        returns {'Mach'=M, 'Beta'=beta, 'Theta'=theta} in degrees.
+
+    '''
+    Beta = None
+    Theta = None
+    if Beta_deg != None:
+        Beta = np.radians(Beta_deg)
+    if Theta_deg != None:
+        Theta = np.radians(Theta_deg)
+
+    # -------------- Find Mach ------------------------------------------------------------------
+    if Mach == None and (Beta != None and Theta != None):
+        # Define functions internally to avoid the functions using globals.
+        # Allows for modularization of the overall functions
+        def F_M(x):
+            M = x
+            theta = Theta
+            beta = Beta
+            gam = Gamma
+            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
+                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
+            return F
+
+        def dF_M(x):
+            M = x
+            beta = Beta
+            gam = Gamma
+            dF_M = (4*(gam + 1)*M*(1/np.tan(beta))) / \
+                (M**2 * np.cos(2*beta) + gam * M**2 + 2)**2
+            return dF_M
+
+        # Find Mach Number
+        # Root search - Returns the lower and upper bounds of a root between start and end
+        low_r, high_r = rt.rootsearch(F_M, 0, 8, 0.01)
+
+        # Newton Raphson
+        root = rt.newtonRaphson(F_M, dF_M, low_r, high_r)
+
+        return {'Mach': root, 'Beta': np.degrees(Beta), 'Theta': np.degrees(Theta)}
+
+    # -------------- Find Beta ------------------------------------------------------------------
+    elif Beta == None and (Mach != None and Theta != None):
+        # Find Beta
+        def F_Beta(x):
+            M = Mach
+            theta = Theta
+            beta = x
+            gam = Gamma
+            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
+                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
+            return F
+
+        def dF_Beta(x):
+            M = Mach
+            beta = x
+            gam = Gamma
+            dF_B = (2*(gam*(M**4)*np.cos(2*beta) + 1/np.sin(beta)**2 *
+                       ((gam + 1)*M**2 + 2) + M**4 - 4*M**2))/((M**2)*np.cos(2*beta) + gam*M**2 + 2)**2
+            return dF_B
+
+        # Find Beta
+        # Root search
+        low_r, high_r = rt.rootsearch(F_Beta, 0, 2*np.pi, .01)
+
+        # Newton Raphson
+        root1 = rt.newtonRaphson(F_Beta, dF_Beta, low_r, high_r)
+
+        # Find second shock angle
+        low_r, high_r = rt.rootsearch(F_Beta, high_r, 2*np.pi, 0.01)
+
+        root2 = rt.newtonRaphson(F_Beta, dF_Beta, low_r, high_r)
+
+        return {'Mach': Mach, 'Weak Beta': np.degrees(root1), 'Strong Beta': np.degrees(root2), 'Theta': np.degrees(Theta)}
+
+    # -------------- Find Theta ------------------------------------------------------------------
+    elif Theta == None and (Beta != None and Mach != None):
+        # Find Theta
+
+        def F_Theta(x):
+            M = Mach
+            theta = x
+            beta = Beta
+            gam = Gamma
+            F = (2/np.tan(beta))*((M**2 * np.sin(beta)**2 - 1) /
+                                  (M**2 * (gam + np.cos(2*beta)) + 2)) - np.tan(theta)
+            return F
+
+        def dF_Theta(x):
+            theta = x
+            dF_T = -(1/np.cos(theta))**2
+            return dF_T
+
+        # Find Theta
+        # Root search
+        low_r, high_r = rt.rootsearch(F_Theta,  0, 2*np.pi, .01)
+
+        # Newton Raphson
+        root = rt.newtonRaphson(F_Theta, dF_Theta, low_r, high_r)
+
+        return {'Mach': Mach, 'Beta': np.degrees(Beta), 'Theta': np.degrees(root)}
+
+    # -------------- Unsolvable  ------------------------------------------------------------------
+    else:
+        # More than one entry is None, shockDeflection unsolvable
+        print('\nError: Two values needed to solve the equation, less than two were supplied.\n')
+        return None
+
+
+def plotShockDeflection(M=None):
+    '''
+    Plots the shock deflection map at a given Mach number M
+    or for a range of Mach numbers from 0 to 15 (if M=None)
+
+    Parameters
+    ----------
+    M : Float, optional
+        Mach Number of Freestream Flow. The default is None.
+
+    Returns
+    -------
+    Matplotlib Figure.
+
+    '''
+    if M == None:
+        M = [0]
+        k = 0
+        incr = 0.01
+        step = incr
+        while M[k] <= 15:
+            M.append(M[k]+step)
+            step += incr + incr*k/3
+            k += 1
+    print(M)
+    if type(M) != list and type(M) != np.ndarray:
+        M = np.array([M])
+
+    M = np.array(M)
+    B = np.arange(1, 90, 0.5)
+
+    Matrix = np.zeros((np.size(B), 2, np.size(M)))
+
+    # Solve for theta for all of the Mach numbers from Beta range 0-90
+    for i, m in enumerate(M):
+        for j, b in enumerate(B):
+            res = shockDeflection(m, b, None)
+            if res['Theta'] < 80:
+                Matrix[j, 0, i] = res['Theta']
+            elif Matrix[j-1, 0, i] != 0:
+                Matrix[j, 0, i] = 0
+            else:
+                Matrix[j, 0, i] = None
+            Matrix[j, 1, i] = b
+
+    # Plotting
+    fig = plt.figure()
+    plt.plot(Matrix[:, 0, :], Matrix[:, 1, :])
+    plt.title('Shock Deflection Angle')
+    plt.xlabel('Theta (°)')
+    plt.ylabel('Beta (°)')
+    plt.grid()
+    return fig
+
 def OBS_Mach2(Mach1, Beta, Theta, Gamma=1.4):
     '''
     Calculates the magnitude of M2 from Mach,
@@ -1222,7 +1221,7 @@ def Mach_Tang(Mach, Beta):
 # After swapping from oblique to normal Machs, can use them
 #   to find the properties after the oblique shock
 
-def Shock_Angle_ob(Mach, P2_P1, gamma=1.4):
+def OBS_Shock_Angle(Mach, P2_P1, gamma=1.4):
     '''
     Calculates the shock angle Beta from the pressure ratio
     before (P1) and after (P2) the shock. 
@@ -1235,16 +1234,79 @@ def Shock_Angle_ob(Mach, P2_P1, gamma=1.4):
         Static Pressure ratio of before (P1) and after (P2) shock.
     gamma : Float, optional
         Specifc Heat Ratio. The default is 1.4.
+        
+    Eqn: Beta = sin^-1( sqrt( (P2/P1 * (gamma+1) + (gamma-1)) / 2*gam*M^2 ))
 
     Returns
     -------
     Float
-        Shock angle Beta.
+        Shock angle Beta (deg).
 
     '''
     return np.rad2deg(np.arcsin(np.sqrt((P2_P1*(gamma+1) + (gamma-1))/(2*gamma*Mach**2))))
 
+def OBS_P2_P1(Mach1, Beta, Gamma=1.4):
+    '''
+    Calculates the static pressure ratio P2/P1 from the shock angle Beta and
+    Mach number upstream of the oblique shock. 
 
+    Parameters
+    ----------
+    Mach : float
+        Freestream Mach number.
+    Beta : float
+        Oblique shock angle (deg).
+    Gamma : float, optional
+        Gas specific heat ratio. The default is 1.4.
+
+    Returns
+    -------
+    P2_P1 : float
+        Static total pressure ratio P2/P1.
+
+    '''
+    
+    Beta = np.deg2rad(Beta)
+    P2_P1 = (2*Gamma*(Mach1*np.sin(Beta))**2 - (Gamma - 1) ) / (Gamma + 1)
+    return P2_P1
+
+def OBS_Pt2_Pt1(Mach1: float, Beta: float, Theta: float, Gamma: float=1.4, returnMach2: bool =False)-> float:
+    '''
+    Calculates the stagnation pressure ratio Pt2/Pt1 from the shock angle (Beta),
+    wedge angle (Theta), and upstream Mach number (Mach1).
+
+    Parameters
+    ----------
+    Mach : float
+        Freestream Mach number.
+    Beta : float
+        Oblique shock angle (deg).
+    Theta : TYPE
+        Wedge angle (deg).
+    Gamma : float, optional
+        Gas specific heat ratio. The default is 1.4.
+    returnMach2 : bool, optional 
+        When true, returns M2 (after shock) in conjunction with Pt2_Pt1, M2. The default is False.
+    
+    Returns
+    -------
+    Pt2_Pt1 : float
+        Stagnation pressure ratio Pt2/Pt1.
+    Optional (toggle from returnMach2):
+        M2 : float
+            Mach number downstream of shock
+
+    '''
+    # Get Mach 2
+    M2 = OBS_Mach2(Mach1, Beta, Theta, Gamma)
+    P2_P1 = OBS_P2_P1(Mach1, Beta, Gamma)
+    Pt2_P2 = Po_P_ratio(M2, Gamma)
+    Pt1_P1 = Po_P_ratio(Mach1, Gamma)
+    
+    Pt2_Pt1 = Pt2_P2 * P2_P1 / Pt1_P1 
+    if returnMach2:
+        return Pt2_Pt1, M2
+    return Pt2_Pt1
 # __________________________________________
 
 # =============================================================================
