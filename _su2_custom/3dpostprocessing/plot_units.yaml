@@ -1,8 +1,8 @@
 title:
-  template: "{var}: {param} x={x_in:.2f} in"
+  template: "{var}: {param} â€” x={x_in:.2f} in"
   template_multi: "{var}: {param}"
 
-units
+units:
   Mach: ""
   Vmag: "ft/s"
   Vx: "ft/s"
@@ -10,12 +10,15 @@ units
   Vtheta: "ft/s"
   Pressure: "psf"
   Temperature: "R"
-  Momentum_x: "slug/(ft^2·s)"
-  Momentum_r: "slug/(ft^2·s)"
-  Momentum_theta: "slug/(ft^2·s)"
+  Momentum_x: "slug/(ft^2Â·s)"
+  Momentum_r: "slug/(ft^2Â·s)"
+  Momentum_theta: "slug/(ft^2Â·s)"
   alpha_deg: "deg"
 
 limits:
+  # Optional per-variable colorbar limits for contours:
+  # Mach: [0.0, 1.0]
+  # alpha_deg: [-45, 45]
   yz:
     y_in: null
     z_in: null

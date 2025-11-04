@@ -17,13 +17,13 @@ input:
 
 geometry:
   r_hub: 0.125
-  r_pipe: 2.0
-  L_tot:  24.0
+  r_pipe: 1.825
+  L_tot:  17.0
 
 slices:
-  x_stations_in: [6.0, 12.0, 18.0]
+  x_stations_in: [0.0, 10.0, 13.5, 17.0]
   dx_tolerance_in: null
-  min_points_per_slice: 3000
+  min_points_per_slice: 200
   save_slice_csv: true
 
 contours:
@@ -33,12 +33,12 @@ contours:
 
 radial_averages:
   variables: ["Mach","Vx","Vtheta","alpha_deg","Pressure","Temperature"]
-  Nr_bins: 80
+  Nr_bins: 20
   save_csv: true
 
 plotting:
   units_yaml: "plot_units.yaml"
-  dpi: 250
+  dpi: 500
   cmap: "viridis"
 
 logging:

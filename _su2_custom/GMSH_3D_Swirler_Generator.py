@@ -279,31 +279,31 @@ def auto_physical_groups(r_hub: float, r_duct: float, L_tot: float,
 def GenerateMesh3D(**kwargs):
     mshName = kwargs.get("MeshName", "3d_swirler_mesh")
     filepath = kwargs.get("FileLocation", "")
-    r_hub = 0.125  # in
-    r_pipe = 2     # in
-    r_duct = 1.825 # in
+    r_hub = kwargs.get("r_hub", 0.125)  # in
+    r_pipe = kwargs.get("r_pipe", 2)    # in
+    r_duct = kwargs.get("r_duct", 1.825) # in
     h_blade = r_duct - r_hub
     
-    nBlades = 6
+    nBlades = kwargs.get("nBlades", 6)
     
     intersect_tol = 0.05  # in
     
-    chord_r = 1  # in
-    chord_t = 2  # in
+    chord_r = kwargs.get("Chord_root", 1)  # in
+    chord_t = kwargs.get("Chord_tip", 2)  # in
     
-    AoA_r = 2.5  # deg
-    AoA_t = 4.0  # deg
+    AoA_r = kwargs.get("AoA_root", 2.5)  # deg
+    AoA_t = kwargs.get("AoA_tip", 4.0)  # deg
     
-    NACA_r = "4406"
-    NACA_t = "6406"
+    NACA_r = kwargs.get("NACA_root", "4406")
+    NACA_t = kwargs.get("NACA_tip",  "6406")
     
-    L_Upstream = 5   # in, distance from inlet to LE
-    L_Downstream = 12  # in, distance from LE to outlet
+    L_Upstream = kwargs.get("L_Upstream", 5)   # in, distance from inlet to LE
+    L_Downstream = kwargs.get("L_Downstream", 12)  # in, distance from LE to outlet
     L_tot = L_Downstream + L_Upstream
     
-    n_af_pts = 100
-    af_mesh_size = 0.1
-    pts_msh_size = 0.1
+    n_af_pts = kwargs.get("n_pts_airfoils", 500)
+    af_mesh_size = kwargs.get("mesh_size_airfoils", 0.01)
+    pts_msh_size = kwargs.get("mesh_size_general", 0.1)
     
     
     # =============================================================================
@@ -346,13 +346,13 @@ def GenerateMesh3D(**kwargs):
     zc_pipe =  r_duct * math.cos(half)   # magnitude only
     
     # Inner radius arc endpoints (z = ±, y = +)
-    r1p1 = geo.addPoint(0.0, -yc_hub,  zc_hub)   # -arcangle/2  (quadrant IV)
-    r1p2 = geo.addPoint(0.0, yc_hub,  zc_hub)   # +arcangle/2  (quadrant I)
+    r1p1 = geo.addPoint(0.0, -yc_hub,  zc_hub, pts_msh_size)   # -arcangle/2  (quadrant IV)
+    r1p2 = geo.addPoint(0.0, yc_hub,  zc_hub, pts_msh_size)   # +arcangle/2  (quadrant I)
     rad1 = geo.addCircleArc(startTag=r1p1, endTag=r1p2, middleTag=origin, center=True)
     
     # Outer radius arc endpoints (z = ±, y = +)
-    r2p1 = geo.addPoint(0.0, -yc_pipe, zc_pipe) # -arcangle/2
-    r2p2 = geo.addPoint(0.0, yc_pipe,  zc_pipe) # +arcangle/2
+    r2p1 = geo.addPoint(0.0, -yc_pipe, zc_pipe, pts_msh_size) # -arcangle/2
+    r2p2 = geo.addPoint(0.0, yc_pipe,  zc_pipe, pts_msh_size) # +arcangle/2
     rad2 = geo.addCircleArc(startTag=r2p1, endTag=r2p2, middleTag=origin, center=True)
     
     # Radial lines
@@ -362,7 +362,7 @@ def GenerateMesh3D(**kwargs):
     
     inletLoop = geo.addCurveLoop([l1, rad2, -l2, -rad1])
     inletSurf = geo.addSurfaceFilling(inletLoop)
-    ductVol_tags = geo.extrude([(2, inletSurf)], L_tot, 0, 0, recombine=True)
+    ductVol_tags = geo.extrude([(2, inletSurf)], L_tot, 0, 0, recombine=False)
     gmsh.model.occ.synchronize()
     
     vol_after_extrude = ductVol_tags[1][1]
@@ -395,8 +395,9 @@ def GenerateMesh3D(**kwargs):
     gmsh.model.occ.synchronize()
     
     # 7) Mesh options (optional)
-    gmsh.option.setNumber("Mesh.MeshSizeMin", 0.00001)
-    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.1)
+    gmsh.option.setNumber("Mesh.MeshSizeMin", 0.000001)
+    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.05)
+    
     # 8) Generate mesh & export
     gmsh.model.mesh.generate(3)
     
@@ -421,13 +422,14 @@ def GenerateMesh3D(**kwargs):
     
     
     # Launch GUI
-    # if "-nopopup" not in sys.argv:
-    #     gmsh.fltk.run()
+    OPEN_GMSH_VISUALIZATION = kwargs.get("OPEN_GMSH_VISUALIZATION", False)
+    if OPEN_GMSH_VISUALIZATION:
+        gmsh.fltk.run()
     
     gmsh.finalize()
     return True
     
 if __name__=="__main__":
     filepath = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests"
-    mshName = "3d_test"
-    GenerateMesh3D(MeshName=mshName, FileLocation=filepath)
+    mshName = "refined_3D_test"
+    GenerateMesh3D(MeshName=mshName, FileLocation=filepath, OPEN_GMSH_VISUALIZATION=True)

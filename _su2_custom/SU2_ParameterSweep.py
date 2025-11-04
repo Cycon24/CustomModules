@@ -59,7 +59,8 @@ import Parameter_Adjustor as PA
 import Data_Processor as DP 
 import Data_Plotter_Params as DPP 
 import Data_Plotter_Sweep as DPS
-import myLogger as MyLog
+
+from meshCopier import copy_mesh
 
 # =============================================================================
 # # Options
@@ -75,7 +76,7 @@ SU2_RUNS_PATH = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\"
 
 # if RUN_SWEEP, then we need to set what parameter to sweep
 P_atm = 2116.216 # lbf/ft^2
-sweep_param = {"Pb": [0.99*P_atm, 0.95*P_atm, 0.9*P_atm, 0.8*P_atm]}
+sweep_param = {"Pb": [0.99*P_atm, 0.95*P_atm]}
 ''' 
 Currently Supported params:
     - Angle of Attack ("AoA")
@@ -83,6 +84,7 @@ Currently Supported params:
     - Number of Blades ("nBlades")
     - Airfoil Shape ("NACA") (valid inputs are currently only NACA 4-digit airfoils)
     - Chord length ("Chord")
+    3D
     - Back Pressure ("Pb") in lbf/ft^2 (1 atm is 2116.216)
     
 Whenever a new one is made need to update:
@@ -97,6 +99,9 @@ cfgName = "Rans_test.cfg"
 
 # Set General Params (Sweep) 
 sweep_FilePath = SU2_RUNS_PATH + "3D_Tests"
+USE_DEFAULT_MESH = True
+default_mesh_location = SU2_RUNS_PATH + "3D_tests"
+default_mesh_name = "refined_3D_test"
 
 # =============================================================================
 # Parameter Manual Adjustments (will be applied to ALL runs)
@@ -206,7 +211,11 @@ else:
                 CFG_GEN_COMPLETE = su2cfg.dict_to_cfg(sweep_cfg_params, cfgName, run_FilePath)
             else:
                 # gen 3d mesh
-                SWIRLER_GEN_COMPLETE = gen3DSwirler.GenerateMesh3D(**sweep_msh_params)
+                if USE_DEFAULT_MESH:
+                    copy_mesh(default_mesh_location, default_mesh_name, run_FilePath, mshName)
+                    SWIRLER_GEN_COMPLETE = True    
+                else:
+                    SWIRLER_GEN_COMPLETE = gen3DSwirler.GenerateMesh3D(**sweep_msh_params)
                 su2cfg.dict_to_cfg(sweep_msh_params, mshName+"_params.txt", run_FilePath) 
                 
                 # save cfg file

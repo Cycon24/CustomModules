@@ -288,7 +288,7 @@ def _plot_residuals_history(param_dir: Path, img_format: str, dpi: int, iter_col
     ax.set_ylabel("RMS")
     # ax.set_yscale("log")  # standard for residuals
     ax.grid(True, which="both", linestyle="--", alpha=0.5)
-    ax.set_ylim([-8,2])
+    ax.set_ylim([-9,2])
     ax.minorticks_on()
     ax.legend()
 
