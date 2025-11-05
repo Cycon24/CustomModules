@@ -446,11 +446,16 @@ def MFP_Mach2(Mach1, A1_A2, Pt1_Pt2, Tt1_Tt2, Gamma=1.4, R=287, gc=1):
     MFP2 = MFP1 * A1_A2 * Pt1_Pt2 * np.sqrt(1/Tt1_Tt2)
     MFP2sqrtRgc = MFP2 * np.sqrt(R/gc)
     
-    low_r, high_r = rt.rootsearch(lambda M: MassFlowParam_norm(M, Gamma) - MFP2sqrtRgc, 0, 5, 0.1)
+    # Need to get supersonic and subsonic solutions
+    low_r, high_r = rt.rootsearch(lambda M: MassFlowParam_norm(M, Gamma) - MFP2sqrtRgc, 0, 1, 0.1)
     low_M, high_M = rt.rootsearch(lambda M: MassFlowParam_norm(M, Gamma) - MFP2sqrtRgc, low_r, high_r, 1e-5)
-    M2 = (low_M + high_M)/2
+    M2_sub = (low_M + high_M)/2
+    
+    low_r, high_r = rt.rootsearch(lambda M: MassFlowParam_norm(M, Gamma) - MFP2sqrtRgc, 1, 5, 0.1)
+    low_M, high_M = rt.rootsearch(lambda M: MassFlowParam_norm(M, Gamma) - MFP2sqrtRgc, low_r, high_r, 1e-5)
+    M2_sup = (low_M + high_M)/2
 
-    return M2
+    return M2_sub, M2_sup
 
 def Mach_at_mdot(m_dot, Po, To, A, Gamma=1.4, R=287, gc=1, forceSupersonic=False):
     '''
