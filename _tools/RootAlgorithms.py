@@ -100,12 +100,13 @@ def newtonRaphson(f,df,a,b,tol=1.0e-9):
     raise ValueError('Too many iterations in Newton-Raphson')
 
 # --------- Newton Raphson 2 --------------
-''' soln = newtonRaphson2(f,x,tol=1.0e-9).
-Solves the simultaneous equations f(x) = 0 by
-the Newton-Raphson method using {x} as the initial
-guess. Note that {f} and {x} are vectors.
-'''
+
 def newtonRaphson2(f,x,tol=1.0e-9):
+    ''' soln = newtonRaphson2(f,x,tol=1.0e-9).
+    Solves the simultaneous equations f(x) = 0 by
+    the Newton-Raphson method using {x} as the initial
+    guess. Note that {f} and {x} are vectors.
+    '''
     def jacobian(f,x):
         h = 1.0e-4
         n = len(x)
