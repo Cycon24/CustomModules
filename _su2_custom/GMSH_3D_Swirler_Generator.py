@@ -279,7 +279,7 @@ def auto_physical_groups(r_hub: float, r_duct: float, L_tot: float,
 def GenerateMesh3D(**kwargs):
     mshName = kwargs.get("MeshName", "3d_swirler_mesh")
     filepath = kwargs.get("FileLocation", "")
-    r_hub = kwargs.get("r_hub", 0.125)  # in
+    r_hub = kwargs.get("r_hub", 0.2)  # in
     r_pipe = kwargs.get("r_pipe", 2)    # in
     r_duct = kwargs.get("r_duct", 1.825) # in
     h_blade = r_duct - r_hub
@@ -291,8 +291,8 @@ def GenerateMesh3D(**kwargs):
     chord_r = kwargs.get("Chord_root", 1)  # in
     chord_t = kwargs.get("Chord_tip", 2)  # in
     
-    AoA_r = kwargs.get("AoA_root", 2.5)  # deg
-    AoA_t = kwargs.get("AoA_tip", 4.0)  # deg
+    AoA_r = kwargs.get("AoA_root", 5.0)  # deg 2.5
+    AoA_t = kwargs.get("AoA_tip", 10.0)  # deg 4
     
     NACA_r = kwargs.get("NACA_root", "4406")
     NACA_t = kwargs.get("NACA_tip",  "6406")
