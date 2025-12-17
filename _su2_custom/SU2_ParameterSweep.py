@@ -60,6 +60,10 @@ import Data_Processor as DP
 import Data_Plotter_Params as DPP 
 import Data_Plotter_Sweep as DPS
 
+import postprocessing3d.Data3D_Processor as DP3
+import postprocessing3d.Data3D_Plotter_Params as DPP3
+import postprocessing3d.Data3D_Plotter_Sweep as DPS3
+
 from meshCopier import copy_mesh
 
 # =============================================================================
@@ -76,7 +80,7 @@ SU2_RUNS_PATH = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\"
 
 # if RUN_SWEEP, then we need to set what parameter to sweep
 P_atm = 2116.216 # lbf/ft^2
-sweep_param = {"Pb": [0.99*P_atm, 0.95*P_atm]}
+sweep_param = {"AoA_rt": [[2.5, 4.0], [5.0, 8.0], [5.0, 16.0]]}
 ''' 
 Currently Supported params:
     - Angle of Attack ("AoA")
@@ -86,6 +90,7 @@ Currently Supported params:
     - Chord length ("Chord")
     3D
     - Back Pressure ("Pb") in lbf/ft^2 (1 atm is 2116.216)
+    - Angle of Attack of both blades ("AoA_rt") Adjust the root and tip angles simultaneously ["AoA_rt": [[aoa_r1, aoa_t1], [aoa_r2, aoa_t2]...]
     
 Whenever a new one is made need to update:
     - Parameter_Adjustor.py case structure
@@ -99,9 +104,13 @@ cfgName = "Rans_test.cfg"
 
 # Set General Params (Sweep) 
 sweep_FilePath = SU2_RUNS_PATH + "3D_Tests"
-USE_DEFAULT_MESH = True
+USE_DEFAULT_MESH = False
 default_mesh_location = SU2_RUNS_PATH + "3D_tests"
 default_mesh_name = "refined_3D_test"
+
+# Set 3d condig locations
+cfg_path       = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\post3d_config.yaml'
+units_path     = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\plot_units.yaml'
 
 # =============================================================================
 # Parameter Manual Adjustments (will be applied to ALL runs)
@@ -184,6 +193,10 @@ else:
                     endStr = f"_{val:.0f}"
                 case str():
                     endStr = "_" + val 
+                case list():
+                    endStr = ""
+                    for v in val:
+                        endStr += f"_{v:.0f}"
                 case _:
                     endStr = f"_{val}"
                     
@@ -199,7 +212,6 @@ else:
             
             # Make the adjustment
             sweep_cfg_params, sweep_msh_params = PA.AdjustParams(key, val, sweep_cfg_params, sweep_msh_params)
-            
             if not RANS_3D:
                 # Generate CFG Mesh file (need to use values calculated in mesh for cfg inputs)
                 swirler = genSwirler.SwirlerMeshGenerator(**sweep_msh_params)
@@ -231,11 +243,19 @@ else:
     
     
         if RUN_DATA_PROCESSING and not RUN_MESH_ONLY: 
-            DP.main(param_FilePath, tol_in=0.1)
-            DPP.main(param_FilePath, "png", dpi=200)
-            DPS.main(param_FilePath, "png", dpi=200)
-    
-    
+            dpi = 250
+            if not RANS_3D:
+                DP.main(param_FilePath, tol_in=0.1)
+                DPP.main(param_FilePath, "png", dpi=dpi)
+                DPS.main(param_FilePath, "png", dpi=dpi)
+            else:
+                # 3-D pipeline
+                try:
+                    DP3.main(param_FilePath, cfg_path, units_path=units_path)
+                    DPP3.main(param_FilePath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
+                    DPS3.main(param_FilePath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
+                except:
+                    print("[Error]\t Error in 3d processing")
     
     
     

@@ -9,20 +9,29 @@ mesh_params = {
 # Core
 "MeshName": "swirlerMeshTest",
 "FileLocation": 'meshs',
-# "NACA": "4406",
+"NACA_root": "4406",
+"NACA_tip": "6406",
 "FileType": "BOTH",
-# "GenPointSize": 0.05,
-# "AF_PointSize": 0,
-# "AF_numPoints": 800,
+"GenPointSize": 0.05,
+"AF_PointSize": 0.01,
+"AF_numPoints": 500,
 # "FullMesh": False,
 
 # Tunnel Settings
-# "numBlades": 6,
-# "BladeAoA": 5,
-# "Radius": 0.5,
-# "chord": 1.267,
-# "L_Upstream": 5,      # why: default derives from 5 * chord; chord default is 1
-# "L_Downstream": 12,   # why: default derives from 10 * chord; chord default is 1
+"numBlades": 6,
+"r_hub": 0.2,
+"r_duct": 1.825,
+"r_pipe": 2.0,
+"BladeAoA_root": 5.0,
+"BladeAoA_tip": 10.0,
+"chord_root": 1.0,
+"chord_tip": 2.0,
+"L_Upstream": 5,      # why: default derives from 5 * chord; chord default is 1
+"L_Downstream": 12,   # why: default derives from 10 * chord; chord default is 1
+
+# Mesh Size Options
+"MinMeshSize": 1e-6,
+"MaxMeshSize": 0.05,
 
 # Boundary-Layer Settings (used only if GenBL is True)
 # "GenBL": True,

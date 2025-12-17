@@ -88,6 +88,19 @@ params:
         map:
           off: "\\mathrm{off}"
           on: "\\mathrm{on}"
+          
+    AoA_rt:
+        symbol: "\\alpha"          # math symbol for parameter
+        wrap_math: true            # wrap each component in $...$
+        numeric:
+          fmt: ".1f"               # Python format spec, e.g., .0f, .2f, .2e
+          units: "^\\circ (r,t)"         # appended in mathtext, e.g., ^\\circ for degrees
+        string:
+          # Optional mapping for non-numeric values
+          map:
+            off: "\\mathrm{off}"
+            on: "\\mathrm{on}"
+    
 
 # Optional defaults if a param is missing keys
 defaults:

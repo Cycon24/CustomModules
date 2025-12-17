@@ -19,6 +19,7 @@ import math
 import numpy as np
 import gmsh
 from pathlib import Path
+from base_params_RANS_3D import mesh_params
 
 # Optional: your module import (unchanged)
 import _aerodynamics.AirfoilGenerator as AG
@@ -284,15 +285,15 @@ def GenerateMesh3D(**kwargs):
     r_duct = kwargs.get("r_duct", 1.825) # in
     h_blade = r_duct - r_hub
     
-    nBlades = kwargs.get("nBlades", 6)
+    nBlades = kwargs.get("numBlades", 6)
     
     intersect_tol = 0.05  # in
     
-    chord_r = kwargs.get("Chord_root", 1)  # in
-    chord_t = kwargs.get("Chord_tip", 2)  # in
+    chord_r = kwargs.get("chord_root", 1)  # in
+    chord_t = kwargs.get("chord_tip", 2)  # in
     
-    AoA_r = kwargs.get("AoA_root", 5.0)  # deg 2.5
-    AoA_t = kwargs.get("AoA_tip", 10.0)  # deg 4
+    AoA_r = kwargs.get("BladeAoA_root", 2.5)  # deg 2.5
+    AoA_t = kwargs.get("BladeAoA_tip", 4.0)  # deg 4
     
     NACA_r = kwargs.get("NACA_root", "4406")
     NACA_t = kwargs.get("NACA_tip",  "6406")
@@ -301,9 +302,12 @@ def GenerateMesh3D(**kwargs):
     L_Downstream = kwargs.get("L_Downstream", 12)  # in, distance from LE to outlet
     L_tot = L_Downstream + L_Upstream
     
-    n_af_pts = kwargs.get("n_pts_airfoils", 500)
-    af_mesh_size = kwargs.get("mesh_size_airfoils", 0.01)
-    pts_msh_size = kwargs.get("mesh_size_general", 0.1)
+    n_af_pts = kwargs.get("AF_numPoints", 500)
+    af_mesh_size = kwargs.get("AF_PointSize", 0.01)
+    pts_msh_size = kwargs.get("GenPointSize", 0.1)
+    
+    MinMeshSize = kwargs.get("MinMeshSize", 1e-6)
+    MaxMeshSize = kwargs.get("MaxMeshSize", 0.05)
     
     
     # =============================================================================
@@ -395,8 +399,8 @@ def GenerateMesh3D(**kwargs):
     gmsh.model.occ.synchronize()
     
     # 7) Mesh options (optional)
-    gmsh.option.setNumber("Mesh.MeshSizeMin", 0.000001)
-    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.05)
+    gmsh.option.setNumber("Mesh.MeshSizeMin", MinMeshSize)
+    gmsh.option.setNumber("Mesh.MeshSizeMax", MaxMeshSize)
     
     # 8) Generate mesh & export
     gmsh.model.mesh.generate(3)
@@ -430,6 +434,6 @@ def GenerateMesh3D(**kwargs):
     return True
     
 if __name__=="__main__":
-    filepath = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests"
-    mshName = "refined_3D_test"
-    GenerateMesh3D(MeshName=mshName, FileLocation=filepath, OPEN_GMSH_VISUALIZATION=True)
+    mesh_params["FileLocation"] = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests"
+    mesh_params["MeshName"] = "refined_3D_test"
+    GenerateMesh3D(OPEN_GMSH_VISUALIZATION=True, **mesh_params)

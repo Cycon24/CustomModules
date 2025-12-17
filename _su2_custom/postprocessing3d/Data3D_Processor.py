@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Optional
 import warnings
 
-from cfd3d_utils import load_main_config
-from extract_probe_surfaces import extract_probe_surfaces
+from postprocessing3d.cfd3d_utils import load_main_config
+from postprocessing3d.extract_probe_surfaces import extract_probe_surfaces
 
 
 def _iter_param_dirs(sweep_root: Path):
