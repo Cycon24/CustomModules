@@ -441,7 +441,36 @@ def MassFlowParam_norm(Mach, Gamma=1.4):
     
     return MFPsqrtRgc
 
-def MFP_Mach2(Mach1, A1_A2, Pt1_Pt2, Tt1_Tt2, Gamma=1.4, R=287, gc=1):
+def MFP_Mach2(Mach1: float, A1_A2:float, 
+              Pt1_Pt2:float, Tt1_Tt2:float,
+              Gamma:float=1.4, R:float=287, gc:float=1) -> (float, float):
+    '''
+    Calculates the Mach number at station 2 by utilizing the mass-flow parameter
+    and changes in total temperature, pressure, and area. 
+
+    Parameters
+    ----------
+    Mach1 : float
+        Mach number at station 1.
+    A1_A2 : float
+        Area ratio of first station to second.
+    Pt1_Pt2 : float
+        Total pressure ratio of first station to second (1/pi).
+    Tt1_Tt2 : float
+        Total temperature ratio of first station to second (1/tau).
+    Gamma : float, optional
+        Specific heat ratio of gas. The default is 1.4.
+    R : float, optional
+        Gas constant. The default is 287.
+    gc : float, optional
+        Unit conversion factor. The default is 1 for SI units.
+
+    Returns
+    -------
+    float, float
+        M2_subsonic, M2_supersonic.
+
+    '''
     MFP1 = MassFlowParam_norm(Mach1, Gamma) * np.sqrt(gc/R)
     MFP2 = MFP1 * A1_A2 * Pt1_Pt2 * np.sqrt(1/Tt1_Tt2)
     MFP2sqrtRgc = MFP2 * np.sqrt(R/gc)
