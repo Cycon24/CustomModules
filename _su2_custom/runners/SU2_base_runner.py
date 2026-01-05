@@ -13,14 +13,26 @@ def _format_duration(seconds: float) -> str:
 
 
 
-def basic_CFD_run(cfg_filename: str, cfg_filepath: str, save_output: bool = False, output_date: str = "") -> None:
-    """
-    Run SU2_CFD on the given config.
-    Console: each line is prefixed with elapsed time.
-    Log file: only raw SU2 output lines + one final 'Total elapsed' line.
+def base_CFD_run(cfg_filename: str, cfg_filepath: str, save_output: bool = False) -> None:
+    '''
+    Runs the configuration file cfg_filename located within cfg_filepath through SU2.
 
-    Why perf_counter: monotonic & high-res timing avoids clock jumps.
-    """
+    Parameters
+    ----------
+    cfg_filename : str
+        Full filename of the configuration file: Ex. "filename.cfg". 
+    cfg_filepath : str
+        Full filepath to the configuration file (Ends with folder containing .cfg file).
+    save_output : bool, optional
+        Enables the log file writing when True, saves the log to "cfg_filepath". The default is False.
+
+    Returns
+    -------
+    None
+        
+
+    '''
+    
     run_cmd = f"%SU2_RUN%\\SU2_CFD {cfg_filename}"
     start = time.perf_counter()
 
