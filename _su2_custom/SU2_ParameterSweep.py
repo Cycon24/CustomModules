@@ -108,7 +108,7 @@ USE_DEFAULT_MESH = False
 default_mesh_location = SU2_RUNS_PATH + "3D_tests"
 default_mesh_name = "refined_3D_test"
 
-# Set 3d condig locations
+# Set 3d config locations
 cfg_path       = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\post3d_config.yaml'
 units_path     = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\plot_units.yaml'
 

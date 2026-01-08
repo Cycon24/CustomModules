@@ -283,7 +283,7 @@ def GenerateMesh3D(**kwargs):
     r_hub = kwargs.get("r_hub", 0.2)  # in
     r_pipe = kwargs.get("r_pipe", 2)    # in
     r_duct = kwargs.get("r_duct", 1.825) # in
-    h_blade = r_duct - r_hub
+    h_blade = r_duct - r_hub # in
     
     nBlades = kwargs.get("numBlades", 6)
     
@@ -308,6 +308,28 @@ def GenerateMesh3D(**kwargs):
     
     MinMeshSize = kwargs.get("MinMeshSize", 1e-6)
     MaxMeshSize = kwargs.get("MaxMeshSize", 0.05)
+    
+    # =============================================================================
+    #     Scaling for units
+    # =============================================================================
+    scaleFactor = kwargs.get("UnitsScaleFactor",1) # 1 for in, 2.54 for cm, 0.0254 for m
+    r_hub *= scaleFactor
+    r_pipe *= scaleFactor
+    r_duct *= scaleFactor
+    h_blade *= scaleFactor
+    
+    intersect_tol *= scaleFactor
+    chord_r *= scaleFactor
+    chord_t *= scaleFactor
+    
+    L_Upstream *= scaleFactor
+    L_Downstream *= scaleFactor
+    L_tot *= scaleFactor
+    
+    # af_mesh_size *= scaleFactor
+    # pts_msh_size *= scaleFactor
+    # MinMeshSize *= scaleFactor
+    # MaxMeshSize *= scaleFactor
     
     
     # =============================================================================

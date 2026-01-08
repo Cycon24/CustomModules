@@ -104,7 +104,6 @@ class SwirlerMeshGenerator():
         return ok
     
     def GenerateMesh(self, OpenGMSHVisual=False)-> bool:
-        
         # =============================================================================
         # Start GMSH Operations
         # =============================================================================
@@ -118,8 +117,7 @@ class SwirlerMeshGenerator():
             # Make an alias to speed up typing
             geo = gmsh.model.geo 
             
-        
-            
+
             # Define the wind tunnel rectangle, the width direction will be z-plane
             # Add tunnel points
             ms = self.point_mesh_size
@@ -169,15 +167,12 @@ class SwirlerMeshGenerator():
         #         BL and Fan generatiom
         # =============================================================================
             geo.synchronize()
-            
-            
             if self.GenBL:
                 self.GenerateBoundaryLayer(geo, all_af_lines) # af_curves) # 
                 
             if self.GenFan_TE:
                 self.GenerateFan_TE(all_af_pts)
-                
-                
+                 
             
         # =============================================================================
         #     Tunnel Definition
@@ -312,8 +307,7 @@ class SwirlerMeshGenerator():
             
     def GenerateBoundaryLayer(self, geo, BL_curves) -> None:
     # =============================================================================
-    #     Set up Boundary Layer (Didnt seem to actually affect mesh)
-    # STILL doesnt seem to actually affect the mesh
+    #     I think it was affecting mesh reasonably
     # =============================================================================
         # Get the LE and TE points in all the airfoil points 
         geo.synchronize()

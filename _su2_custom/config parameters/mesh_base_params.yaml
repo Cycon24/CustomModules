@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+# """
+# Created on Thu Jan  8 17:24:41 2026
+
+# @author: BriceM
+# """
+
+IS_3D: true                 # Dictates whether 2D or 3D params are converted to the dict
+
+# General/Shared Parameters
+General:
+    MeshName: "swirlerMesh" 
+    FileLocation: r""       # Folder Location to store Mesh
+    FileType: "BOTH"        # SU2, MSH, or BOTH
+    UnitsScaleFactor: 1     # 1 for in, 2.54 for cm, 0.0254 for m
+    GenPointSize: 0.05      # element size at each defined point
+    
+    L_Upstream: 5           # in, distance from inlet to LE
+    L_Downstream: 12        # in, distance from LE to outlet
+    
+    numBlades: 6
+    
+# 2D Parameters
+mesh2D:
+    Airfoil:
+        NACA: "6406"        # four digit NACA airfoil
+        AF_pointSize: 0     # float, 0 to be overwritten by GenPointSize
+        AF_numPoints: 400   # int, number of points along the airfoil curve
+        BladeAoA: 5         # deg, blade angle of attack
+        chord: 2            # in, chord length
+        Radius: 2           # in, radius at which 2D plane is unraveled
+        
+    BoundaryLayer:
+        GenBL: true         # activates boundary layer generation
+        BL_nLayers: 20
+        BL_BetaCoef: 1.01
+        BL_Quad: 1 
+        BL_h1: 1e-4
+        BL_Thickness: 5
+    
+    TrailingEdgeFan:
+        GenFan_TE: true
+        TEF_Length: 4
+        TEF_FanMultFactor: 2 
+        TEF_minSize: 5e-3 
+    
+# 3D Parameters    
+mesh3D: 
+    MinMeshSize: 1e-6       # 3D mesh size control?
+    MaxMeshSize: 0.05       # ^
+    
+    Airfoil:
+        NACA_root: "4406"   # root (innet) 4-digit airfoil
+        NACA_tip:  "6406"   # tip (outter)
+        BladeAoA_root: 5.0  # deg, root profile angle of attack
+        BladeAoA_tip: 10.0  # deg, tip profile angle of attack
+        chord_root: 1.0     # in, root profile chord length
+        chord_tip:  2.0     # in, tip profile chord length
+        
+    Duct:
+        r_hub: 0.20         # in, radius of the root hub
+        r_duct: 1.825       # in, radius of the duct of swirler
+        r_pipe: 2.000       # in, radius of pipe (ignored right now)
+        
