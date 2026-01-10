@@ -1,0 +1,148 @@
+# # -*- coding: utf-8 -*-
+# """
+# Created on Fri Jan  9 13:05:17 2026
+
+# @author: BriceM
+# """
+
+General:
+    MESH_FORMAT: "SU2"
+    MESH_FILENAME: "mesh.su2"
+    
+    RESTART_SOL: "NO"
+    WRT_RESTART_COMPACT: "NO"
+    
+Solver_Navier:
+    MATH_PROBLEM:   "DIRECT"
+    SOLVER:         "NAVIER_STOKES"
+    KIND_TURB_MODEL:"NONE"
+    
+Solver_Rans:
+    MATH_PROBLEM:   "DIRECT"
+    SOLVER:         "RANS"
+    KIND_TURB_MODEL:"SA"
+    PRANDTL_TURB:    0.9    # Default = 0.9
+    
+GasProperties:
+    SYSTEM_MEASUREMENTS: "US"
+    FLUID_MODEL: "STANDARD_AIR"
+    GAMMA_VALUE: 1.4
+    GAS_CONSTANT: 1716.49
+    
+    # Freestream initiation (helps with solver time)
+    MACH_NUMBER: 0.3
+    AOA: 0.0
+    FREESTREAM_TEMPERATURE: 1660.0      # R or K
+    FREESTREAM_PRESSURE:    2116.216    # lbf/ft^2 or Pa
+    REYNOLDS_NUMBER: 8.981e04
+    REYNOLDS_LENGTH: 2.0
+    
+    # Reference Dimensions
+    REF_LENGTH: 1.0 
+    REF_AREA: 1.0
+    
+    # Viscocity and Thermal
+    VISCOSITY_MODEL:    "SUTHERLAND"
+    MU_REF:             "3.737e-7"
+    MU_T_REF:           "518.67"
+    SUTHERLAND_CONSTANT:"198.72"
+    PRANDTL_LAM:        "0.72"
+    
+    
+    
+BoundaryConditions:
+    MARKER_INLET:       "(Inlet, 1689.88, 2252.564, 1.0, 0.0, 0.0 )"
+    MARKER_OUTLET:      "( Outlet, 2116.216 )"
+    
+    # Plotting Markers
+    MARKER_PLOTTING:    "( Airfoils )",
+    MARKER_MONITORING:  "( Airfoils )",
+    
+BC_2D:
+    MARKER_PERIODIC:    "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, -{}, 0.0)"
+    MARKER_HEATFLUX:    "( Airfoils, 0.0)"
+    
+BC_3D:
+    MARKER_PERIODIC:    "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (-60.0, 0.0, 0.0), (0.0, 0.0, 0.0)"
+    MARKER_HEATFLUX:    "( Airfoils, 0.0), (Walls, 0.0)"
+
+ 
+Convergence:
+    # Residuals
+    NUM_METHOD_GRAD:    "WEIGHTED_LEAST_SQUARES"
+    MUSCL_FLOW:         "YES"
+    SLOPE_LIMITER_FLOW: "VENKATAKRISHNAN"
+    VENKAT_LIMITER_COEFF: 0.05
+    
+    # Convergence Parameters
+    CONV_NUM_METHOD_FLOW: "ROE"
+    ENTROPY_FIX_COEFF:   0.05
+    LOW_MACH_PREC:       "NO"
+    ROE_KAPPA:           0.50
+    MIN_ROE_TURKEL_PREC: 0.01
+    MAX_ROE_TURKEL_PREC: 0.20
+    
+    
+    # Time Convergence Parameters
+    TIME_DISCRE_FLOW:   "EULER_IMPLICIT"
+    LINEAR_SOLVER:      "FGMRES"
+    LINEAR_SOLVER_PREC: "ILU"
+    LINEAR_SOLVER_ITER:  120 # 20 for RANS, 120 for NavierStokes
+    LINEAR_SOLVER_ERROR: 1e-10 # 1e-6 for NS
+    
+    # General Convergence Paramers
+    ITER:               5000 # 10000 for RANS recomended
+    CONV_STARTITER:     20
+    CONV_RESIDUAL_MINVAL: -9
+    CONV_CAUCHY_ELEMS:  100
+    CONV_CAUCHY_EPS:    1e-6
+    CONV_FIELD:         "DRAG"
+    
+    # CFL Parameters
+    # May need ot increase CFL Vals, other rans sim used 100 no adapt and 100000 max CFL, 15 min
+    CFL_NUMBER: 0.5
+    CFL_ADAPT: "YES"
+    CFL_ADAPT_PARAM: "( 0.5, 1.2, 0.01, 3.0,1e-3, 0 )"
+    # Try keeping CFL low (3 rather than 30)
+    
+Convergence_RANS:
+     # Convergence Parameters
+     JST_SENSOR_COEFF: "(0.5, 0.02)" # If JST used in place of ROE?
+     
+     # Turbulence Convergence Params
+     CONV_NUM_METHOD_TURB:  "SCALAR_UPWIND",
+     MUSCL_TURB:            "NO", # other rans used NO
+     SLOPE_LIMITER_TURB:    "VENKATAKRISHNAN",
+     TIME_DISCRE_TURB:      "EULER_IMPLICIT",
+     
+     RK_ALPHA_COEFF: "( 0.66667, 0.66667, 1.000000 )",
+    
+    
+Outputs:
+    OUTPUT_FILES: "( RESTART, PARAVIEW, SURFACE_CSV, CSV, SURFACE_PARAVIEW )"
+    VOLUME_OUTPUT: "(COORDINATES, SOLUTION, PRIMITIVE, CUSTOM)"
+    OUTPUT_WRT_FREQ: "250, 250, 250, 250, 250"
+    TABULAR_FORMAT: "CSV"
+
+    # Output Filenames
+    SOLUTION_FILENAME:      "solution_flow"
+    SOLUTION_ADJ_FILENAME:  "solution_adj"
+    CONV_FILENAME:          "history"
+    RESTART_FILENAME:       "entire_surface_restart"
+    RESTART_ADJ_FILENAME:   "restart_adj"
+
+    VOLUME_FILENAME:        "flow"
+    VOLUME_ADJ_FILENAME:    "adjoint"
+    GRAD_OBJFUNC_FILENAME:  "of_grad"
+
+    SURFACE_FILENAME:       "surface_flow_markers"
+    SURFACE_ADJ_FILENAME:   "surface_adjoint"
+    # Screen and mesh output
+    MESH_OUT_FILENAME:  "mesh_out"
+    
+Outputs_Navier:
+    SCREEN_OUTPUT:     "(INNER_ITER, WALL_TIME, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY)"
+   
+Outputs_RANS:
+    SCREEN_OUTPUT:     "(INNER_ITER, WALL_TIME, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, RMS_NU_TILDE, LIFT, DRAG)"
+  
