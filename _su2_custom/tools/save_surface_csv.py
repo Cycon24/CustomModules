@@ -118,15 +118,15 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     filename = "entire_surface_restart.csv"
-    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\Pb_sweep_coarse\Pb_1693"
+    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_02_mdot"
     
     imported = import_csv_to_df(filename, filelocation)
-    inlet = extract_points_in_plane(0/12, imported, tol=0.01/12)
-    mdot, diag = mass_flow_rate_yz(inlet, return_diagnostics=True)
+    inlet = extract_points_in_plane(0, imported, tol=0.01e-3)
+    mdot, diag = mass_flow_rate_yz(inlet, return_diagnostics=True, gc=1)
     
-    print(f"mdot_s = {mdot:.4f} lbm/s")
-    print(f"mdot_t = {6*mdot:.4f} lbm/s")
-    print(f"mdot_t = {6*mdot/2.2:.4f} kg/s")
+    # print(f"mdot_s = {mdot:.4f} lbm/s")
+    # print(f"mdot_t = {6*mdot:.4f} lbm/s")
+    print(f"mdot_t = {6*mdot:.4f} kg/s")
     plt.figure()
     plt.scatter(inlet["y"], inlet["z"])
     plt.ylabel("z [ft]")

@@ -19,7 +19,7 @@ import math
 import numpy as np
 import gmsh
 from pathlib import Path
-from base_params_RANS_3D import mesh_params
+
 
 # Optional: your module import (unchanged)
 import _aerodynamics.AirfoilGenerator as AG
@@ -312,24 +312,7 @@ def GenerateMesh3D(**kwargs):
     # =============================================================================
     #     Scaling for units
     # =============================================================================
-    scaleFactor = kwargs.get("UnitsScaleFactor",1) # 1 for in, 2.54 for cm, 0.0254 for m
-    r_hub *= scaleFactor
-    r_pipe *= scaleFactor
-    r_duct *= scaleFactor
-    h_blade *= scaleFactor
-    
-    intersect_tol *= scaleFactor
-    chord_r *= scaleFactor
-    chord_t *= scaleFactor
-    
-    L_Upstream *= scaleFactor
-    L_Downstream *= scaleFactor
-    L_tot *= scaleFactor
-    
-    # af_mesh_size *= scaleFactor
-    # pts_msh_size *= scaleFactor
-    # MinMeshSize *= scaleFactor
-    # MaxMeshSize *= scaleFactor
+    scaleFactor = kwargs.get("UnitsScaleFactor", 1) # 1 for in, 2.54 for cm, 0.0254 for m
     
     
     # =============================================================================
@@ -421,11 +404,17 @@ def GenerateMesh3D(**kwargs):
     gmsh.model.occ.synchronize()
     
     # 7) Mesh options (optional)
+    gmsh.option.setNumber("Mesh.ScalingFactor", scaleFactor) # Scales the mesh FOR SAVING, not for initial visual
+    
+    # gmsh.option.setNumber("Geometry.Tolerance", 1e-6)
     gmsh.option.setNumber("Mesh.MeshSizeMin", MinMeshSize)
     gmsh.option.setNumber("Mesh.MeshSizeMax", MaxMeshSize)
     
     # 8) Generate mesh & export
     gmsh.model.mesh.generate(3)
+
+
+    gmsh.model.geo.synchronize()
     
     
 # =============================================================================
@@ -448,7 +437,7 @@ def GenerateMesh3D(**kwargs):
     
     
     # Launch GUI
-    OPEN_GMSH_VISUALIZATION = kwargs.get("OPEN_GMSH_VISUALIZATION", False)
+    OPEN_GMSH_VISUALIZATION = kwargs.get("OpenGMSHVisual", False)
     if OPEN_GMSH_VISUALIZATION:
         gmsh.fltk.run()
     
@@ -456,6 +445,7 @@ def GenerateMesh3D(**kwargs):
     return True
     
 if __name__=="__main__":
+    from base_params_RANS_3D import mesh_params
     mesh_params["FileLocation"] = "C:\\Users\\BriceM\\Documents\\SU2 CFD Data\\3D_Tests"
     mesh_params["MeshName"] = "refined_3D_test"
     GenerateMesh3D(OPEN_GMSH_VISUALIZATION=True, **mesh_params)

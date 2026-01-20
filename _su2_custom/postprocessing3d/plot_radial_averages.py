@@ -58,7 +58,7 @@ def plot_radial_averages(
     for pf in probe_files:
         name = pf.stem  # slice_x=..._dx=...
         try:
-            x_in = float(name.split("slice_x=")[1].split("_dx=")[0])
+            x_in = float(name.split("slice_x=")[1].split("_")[0])
         except Exception:
             x_in = np.nan
 
@@ -76,6 +76,7 @@ def plot_radial_averages(
 
     for var in variables:
         fig, ax = plt.subplots(figsize=(6, 4), dpi=dpi)
+        print(f"[INFO] Radial Plotter: plotting {param_name} var={var}")
 
         for x_in in stations:
             stats = per_station[x_in]

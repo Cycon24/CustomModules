@@ -50,18 +50,20 @@ def plot_cross_section_contours(
     if not probe_files:
         raise FileNotFoundError(f"No probe CSVs found in {probe_dir}")
 
-    title_tmpl = units_cfg.get("title", {}).get("template", "{var}: {param} — x={x_in:.2f} in")
+    title_tmpl = units_cfg.get("title", {}).get("template", "{var}: {param} \n x={x_in:.2f} in")
     yz_limits = units_cfg.get("limits", {}).get("yz", {})
     y_lim = yz_limits.get("y_in", None)
     z_lim = yz_limits.get("z_in", None)
 
     for pf in probe_files:
         name = pf.stem  # "slice_x=<x>_dx=<dx>"
+       
         try:
-            x_in = float(name.split("slice_x=")[1].split("_dx=")[0])
+            x_in = float(name.split("slice_x=")[1].split("_")[0])
         except Exception:
             x_in = np.nan
-
+            
+        print(f"[INFO] Contour Plotter: plotting {param_name} slice x={x_in}")
         df = pd.read_csv(pf)
         tri = mtri.Triangulation(df["y"].to_numpy(), df["z"].to_numpy())
 
@@ -123,3 +125,4 @@ def plot_cross_section_contours(
             out_path = out_dir / f"{var}.png"
             fig.savefig(out_path, bbox_inches="tight")
             plt.close(fig)
+

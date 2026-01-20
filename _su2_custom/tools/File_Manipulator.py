@@ -8,7 +8,7 @@ import traceback
 from pathlib import Path
 
 
-def dict_to_cfg(cfg_dict: dict, cfg_filename: str, cfg_filepath: str = "") -> bool:
+def dict_to_cfg(cfg_dict: dict, cfg_filename: str, cfg_filepath: str|Path) -> bool:
     '''
     Converts a dictionary cfg_dict to a configuration file and saves it to cfg_filename in the
     directory cfg_filepath. If the filepath does not exist, it will create it.
@@ -29,8 +29,8 @@ def dict_to_cfg(cfg_dict: dict, cfg_filename: str, cfg_filepath: str = "") -> bo
 
     '''
     try: 
-        cfg_filepath = cfg_filepath + "\\" if cfg_filepath != "" else ""
-        out_path = Path(cfg_filepath + cfg_filename)
+        cfg_filepath = Path(cfg_filepath) if type(cfg_filepath) == str else cfg_filepath
+        out_path = Path(cfg_filepath / cfg_filename)
         # Ensure parent directory exists (no-op if '.' or already present).
         out_path.parent.mkdir(parents=True, exist_ok=True)
 

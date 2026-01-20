@@ -14,17 +14,28 @@ input:
     mach: "Mach"
     pressure: "Pressure"
     temperature: "Temperature"
+    
+units:
+    loaded_units: "m"
+    final_units: "in"
+    scale_factor: 39.37007874 # before: 1m * 100cm/1m * 1in/2.54cm -> to inches
+    # Scaling factors:
+    # m to in: 39.37007874
+    # ft to in: 12
+    # m to ft: 3.280839895
+    
 
 geometry:
-  r_hub: 0.125
+  r_hub: 0.2
   r_pipe: 1.825
-  L_tot:  17.0
-
+  L_tot:  17.0 # in
+ 
 slices:
   x_stations_in: [0.0, 10.0, 13.5, 17.0]
-  dx_tolerance_in: null
+  dx_tolerance: null
   min_points_per_slice: 200
   save_slice_csv: true
+  
 
 contours:
   variables: ["Mach","Vmag","Vx","Vr","Vtheta","Pressure","Temperature",
@@ -32,7 +43,7 @@ contours:
   levels: 50
 
 radial_averages:
-  variables: ["Mach","Vx","Vtheta","alpha_deg","Pressure","Temperature"]
+  variables: ["Mach","Vx","Vtheta","Vr", "alpha_deg","Pressure","Temperature"]
   Nr_bins: 20
   save_csv: true
 

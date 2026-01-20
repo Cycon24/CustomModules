@@ -3,22 +3,35 @@ title:
   template_multi: "{var}: {param}"
 
 units:
-  Mach: ""
-  Vmag: "ft/s"
-  Vx: "ft/s"
-  Vr: "ft/s"
-  Vtheta: "ft/s"
-  Pressure: "psf"
-  Temperature: "R"
-  Momentum_x: "slug/(ft^2·s)"
-  Momentum_r: "slug/(ft^2·s)"
-  Momentum_theta: "slug/(ft^2·s)"
-  alpha_deg: "deg"
+    US:
+      Mach: ""
+      Vmag: "ft/s"
+      Vx: "ft/s"
+      Vr: "ft/s"
+      Vtheta: "ft/s"
+      Pressure: "psf"
+      Temperature: "R"
+      Momentum_x: "slug/(ft^2·s)"
+      Momentum_r: "slug/(ft^2·s)"
+      Momentum_theta: "slug/(ft^2·s)"
+      alpha_deg: "deg"
+    US:
+      Mach: ""
+      Vmag: "m/s"
+      Vx: "m/s"
+      Vr: "m/s"
+      Vtheta: "m/s"
+      Pressure: "Pa"
+      Temperature: "K"
+      Momentum_x: "kg/(m^2·s)"
+      Momentum_r: "kg/(m^2·s)"
+      Momentum_theta: "kg/(m^2·s)"
+      alpha_deg: "deg"
 
 limits:
   # Optional per-variable colorbar limits for contours:
   # Mach: [0.0, 1.0]
-  # alpha_deg: [-45, 45]
+  # alpha_deg: [-45, 0]
   yz:
     y_in: null
     z_in: null

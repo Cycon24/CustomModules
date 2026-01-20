@@ -30,24 +30,27 @@ def extract_probe_surfaces(
     # --- config unpack ---
     csv_path = param_dir / cfg["input"]["surface_csv"]
     columns = cfg["input"]["columns"]
-
-    df = read_surface_csv(csv_path, columns)
+    scale_factor = cfg["units"]["scale_factor"]
+    units = cfg["units"].get("final_units", "")
+    
+    df = read_surface_csv(csv_path, columns, scale_factor)
     df = add_cylindrical_about_x(df)
 
     r_hub = float(cfg["geometry"]["r_hub"])
     r_pipe = float(cfg["geometry"]["r_pipe"])
 
-    x_stations = list(cfg["slices"]["x_stations_in"])
-    dx_tol = cfg["slices"].get("dx_tolerance_in", None)
+    x_stations_in = list(cfg["slices"]["x_stations_in"])
+    dx_tol = cfg["slices"].get("dx_tolerance", None)
     min_pts = int(cfg["slices"].get("min_points_per_slice", 3000))
     save_slice_csv = bool(cfg["slices"].get("save_slice_csv", True))
+    
 
     probes_dir = param_dir / "Probes"
     logs_dir = param_dir / "Logs"
     ensure_dir(probes_dir)
     ensure_dir(logs_dir)
 
-    for x0 in x_stations:
+    for x0 in x_stations_in:
         slice_df, diags = extract_slab(
             df=df,
             x0=float(x0),
@@ -57,7 +60,7 @@ def extract_probe_surfaces(
 
         # save the slice data for reuse
         if save_slice_csv:
-            fn = probes_dir / f"slice_x={x0:.6f}.csv"
+            fn = probes_dir / f"slice_x={x0:.6f}_{units}.csv"
             slice_df.to_csv(fn, index=False)
 
         # log diagnostics for summary

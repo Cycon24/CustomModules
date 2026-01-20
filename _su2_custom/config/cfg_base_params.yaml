@@ -5,6 +5,14 @@
 # @author: BriceM
 # """
 
+FlowConditions:
+    Inlet_Static_Temperature:       922.22 # K or 1660 R
+    Inlet_Static_Pressure: !!float  120e3  # Pa or lbf/ft^2
+    Inlet_Target_Mach:              0.3    # Mach number
+    Inlet_Target_mdot:              0.5    # mdot, kg/s or slug/s         
+    Back_Pressure: !!float          101.325e3 # Pa or lbf/ft^2
+    Inlet_Area:                     0.00666954 # m^2
+    
 General:
     MESH_FORMAT: "SU2"
     MESH_FILENAME: "mesh.su2"
@@ -15,48 +23,48 @@ General:
 Solver_Navier:
     MATH_PROBLEM:   "DIRECT"
     SOLVER:         "NAVIER_STOKES"
-    KIND_TURB_MODEL:"NONE"
+    KIND_TURB_MODEL: "NONE"  
     
-Solver_Rans:
+Solver_RANS:
     MATH_PROBLEM:   "DIRECT"
     SOLVER:         "RANS"
-    KIND_TURB_MODEL:"SA"
+    KIND_TURB_MODEL: "SA"
     PRANDTL_TURB:    0.9    # Default = 0.9
     
 GasProperties:
-    SYSTEM_MEASUREMENTS: "US"
+    SYSTEM_MEASUREMENTS: "SI" # or US
     FLUID_MODEL: "STANDARD_AIR"
     GAMMA_VALUE: 1.4
-    GAS_CONSTANT: 1716.49
+    GAS_CONSTANT: 287      # 287 J/kg*K or 1716.49 ft*lbf/slug*R for air
     
     # Freestream initiation (helps with solver time)
     MACH_NUMBER: 0.3
     AOA: 0.0
-    FREESTREAM_TEMPERATURE: 1660.0      # R or K
-    FREESTREAM_PRESSURE:    2116.216    # lbf/ft^2 or Pa
-    REYNOLDS_NUMBER: 8.981e04
-    REYNOLDS_LENGTH: 2.0
-    
+    FREESTREAM_TEMPERATURE: 922.222 # 1660.0      # R or K
+    FREESTREAM_PRESSURE:    101325 # 2116.216    # lbf/ft^2 or Pa
+    REYNOLDS_NUMBER: 178979.3
+    REYNOLDS_LENGTH: 0.1016 # 0.33333 ft or 0.1016m
     # Reference Dimensions
-    REF_LENGTH: 1.0 
-    REF_AREA: 1.0
+    REF_LENGTH: 1.625  # span 
+    REF_AREA: 0.0015726 # blade area
     
     # Viscocity and Thermal
     VISCOSITY_MODEL:    "SUTHERLAND"
-    MU_REF:             "3.737e-7"
-    MU_T_REF:           "518.67"
-    SUTHERLAND_CONSTANT:"198.72"
+    MU_REF: !!float     1.716e-5        # "3.737e-7" US or 1.716x10-5 Pa*s
+    MU_T_REF:           273.11          # "518.67" R or 273.11 K
+    SUTHERLAND_CONSTANT: 110.56         # "198.72" R or 110.56 K
     PRANDTL_LAM:        "0.72"
     
     
     
 BoundaryConditions:
-    MARKER_INLET:       "(Inlet, 1689.88, 2252.564, 1.0, 0.0, 0.0 )"
-    MARKER_OUTLET:      "( Outlet, 2116.216 )"
+    INLET_TYPE:         "MASS_FLOW" # default is TOTAL_CONDITIONS
+    MARKER_INLET:       "(Inlet, {:.3f}, {:.3f}, 1.0, 0.0, 0.0 )" # Total Conditions: Tt, Pt, Mass Flow: rho, V_mag
+    MARKER_OUTLET:      "( Outlet, {:.3f} )" # Pb (static)
     
     # Plotting Markers
-    MARKER_PLOTTING:    "( Airfoils )",
-    MARKER_MONITORING:  "( Airfoils )",
+    MARKER_PLOTTING:    "( Airfoils )"
+    MARKER_MONITORING:  "( Airfoils )"
     
 BC_2D:
     MARKER_PERIODIC:    "(Symmetry2, Symmetry1) , (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, -{}, 0.0)"
@@ -95,7 +103,7 @@ Convergence:
     CONV_STARTITER:     20
     CONV_RESIDUAL_MINVAL: -9
     CONV_CAUCHY_ELEMS:  100
-    CONV_CAUCHY_EPS:    1e-6
+    CONV_CAUCHY_EPS:    1e-7
     CONV_FIELD:         "DRAG"
     
     # CFL Parameters
@@ -110,12 +118,12 @@ Convergence_RANS:
      JST_SENSOR_COEFF: "(0.5, 0.02)" # If JST used in place of ROE?
      
      # Turbulence Convergence Params
-     CONV_NUM_METHOD_TURB:  "SCALAR_UPWIND",
-     MUSCL_TURB:            "NO", # other rans used NO
-     SLOPE_LIMITER_TURB:    "VENKATAKRISHNAN",
-     TIME_DISCRE_TURB:      "EULER_IMPLICIT",
+     CONV_NUM_METHOD_TURB:  "SCALAR_UPWIND"
+     MUSCL_TURB:            "NO" # other rans used NO
+     SLOPE_LIMITER_TURB:    "VENKATAKRISHNAN"
+     TIME_DISCRE_TURB:      "EULER_IMPLICIT"
      
-     RK_ALPHA_COEFF: "( 0.66667, 0.66667, 1.000000 )",
+     RK_ALPHA_COEFF: "( 0.66667, 0.66667, 1.000000 )"
     
     
 Outputs:
@@ -145,4 +153,4 @@ Outputs_Navier:
    
 Outputs_RANS:
     SCREEN_OUTPUT:     "(INNER_ITER, WALL_TIME, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, RMS_NU_TILDE, LIFT, DRAG)"
-  
+    HISTORY_OUTPUT:    "(INNER_ITER, WALL_TIME, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_MOMENTUM-Z,RMS_ENERGY, RMS_NU_TILDE, LIFT, DRAG)"

@@ -12,12 +12,12 @@ from pathlib import Path
 from typing import Optional
 import warnings
 
-from postprocessing3d.cfd3d_utils import (
+from cfd3d_utils import (
     load_main_config,
     load_units_config,
 )
-from postprocessing3d.plot_cross_section_contours import plot_cross_section_contours
-from postprocessing3d.plot_radial_averages import plot_radial_averages
+from  plot_cross_section_contours import plot_cross_section_contours
+from  plot_radial_averages import plot_radial_averages
 
 
 def _iter_param_dirs(sweep_root: Path):
@@ -120,7 +120,15 @@ def main(
 
 if __name__ == "__main__":
     # Example debug usage
-    sweep_example  = r"C:\path\to\Sweep\AoA_sweep"
-    cfg_example    = r"C:\path\to\post3d_config.yaml"
-    units_example  = r"C:\path\to\plot_units.yaml"
-    main(sweep_example, cfg_example, units_example, img_format="png", dpi=250)
+    # sweep_example  = r"C:\path\to\Sweep\AoA_sweep"
+    # cfg_example    = r"C:\path\to\post3d_config.yaml"
+    # units_example  = r"C:\path\to\plot_units.yaml"
+    # main(sweep_example, cfg_example, units_example, img_format="png", dpi=250)
+    cfg_path   = Path(r"C:\Users\BriceM\Documents\Modules\_su2_custom\postprocessing3d\post3d_config.yaml")
+    units_path   = Path(r"C:\Users\BriceM\Documents\Modules\_su2_custom\postprocessing3d\plot_units.yaml")
+    
+    
+    param_dir = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_01")
+    cfg = load_main_config(cfg_path)
+    units_cfg = load_main_config(cfg_path)
+    _run_for_param(param_dir, cfg, units_cfg, "png", 300)

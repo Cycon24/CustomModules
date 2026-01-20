@@ -29,7 +29,6 @@ class SwirlerMeshGenerator():
         self.point_mesh_size = kwargs.get("GenPointSize", 0) # Passed into point creation, increases mesh density around points
         self.af_mesh_size = kwargs.get("AF_PointSize", 0) # Will be overwritten if BL is enabled
         self.AF_numPoints = kwargs.get("AF_numPoints", 25)
-        self.FullMesh = kwargs.get("FullMesh", True) # Defines wether we look at a single blade or all
         
         # Tunnel Settings
         self.numBlades = kwargs.get("numBlades", 1) # number of blades to model
@@ -131,37 +130,20 @@ class SwirlerMeshGenerator():
             
             LE_dist = 2*np.pi*self.Radius / self.numBlades 
             
-            # Check if we are rendering all blades or just a single one.
-            if self.FullMesh:
-                for i in range(0, self.numBlades):
-                    # generate airfoil curve
-                    rotation_angles = [0, 0, -self.BladeAoA]
-                    dxdydz = [self.L_Upstream, (LE_dist*(1/2 + i)) - (self.chord/2.5)*np.sin(np.deg2rad(-self.BladeAoA)), 0]  
-                    afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo,
-                                                                                 self.AirfoilNACA,
-                                                                                 dxdydz[0], dxdydz[1], dxdydz[2],
-                                                                                 c=self.chord, 
-                                                                                 numPoints=self.AF_numPoints, 
-                                                                                 rot_ang=rotation_angles, 
-                                                                                 mesh_size=self.af_mesh_size)
-                    # Append curve, lines, and point tags to one list each
-                    af_curves.append(afcurve)
-                    all_af_lines.extend(af_line_tags)
-                    all_af_pts.extend(af_point_tags)
-            else:
-                rotation_angles = [0, 0, -self.BladeAoA]
-                dxdydz = [self.L_Upstream, LE_dist/2 - (self.chord/2.5)*np.sin(np.deg2rad(-self.BladeAoA)), 0] # Add AoA adjustment on dy:  - (chord/2)*np.sin(np.deg2rad(-blade_AoA))
-                afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo,
-                                                                             self.AirfoilNACA,
-                                                                             dxdydz[0], dxdydz[1], dxdydz[2],
-                                                                             c=self.chord, 
-                                                                             numPoints=self.AF_numPoints, 
-                                                                             rot_ang=rotation_angles, 
-                                                                             mesh_size=self.af_mesh_size)
-                # Append curve, lines, and point tags to one list each
-                af_curves.append(afcurve)
-                all_af_lines.extend(af_line_tags)
-                all_af_pts.extend(af_point_tags)
+        
+            rotation_angles = [0, 0, -self.BladeAoA]
+            dxdydz = [self.L_Upstream, LE_dist/2 - (self.chord/2.5)*np.sin(np.deg2rad(-self.BladeAoA)), 0] # Add AoA adjustment on dy:  - (chord/2)*np.sin(np.deg2rad(-blade_AoA))
+            afcurve, af_line_tags, af_point_tags = AG.generateGMSH_NACA4(geo,
+                                                                         self.AirfoilNACA,
+                                                                         dxdydz[0], dxdydz[1], dxdydz[2],
+                                                                         c=self.chord, 
+                                                                         numPoints=self.AF_numPoints, 
+                                                                         rot_ang=rotation_angles, 
+                                                                         mesh_size=self.af_mesh_size)
+            # Append curve, lines, and point tags to one list each
+            af_curves.append(afcurve)
+            all_af_lines.extend(af_line_tags)
+            all_af_pts.extend(af_point_tags)
                 
         # =============================================================================
         #         BL and Fan generatiom
@@ -178,7 +160,7 @@ class SwirlerMeshGenerator():
         #     Tunnel Definition
         # =============================================================================
             # Generate space around the airfoils (Tunnel)
-            y_t = 2*np.pi*self.Radius  if self.FullMesh else LE_dist # max y of tunnel
+            y_t = LE_dist # max y of tunnel
             self.PeriodicOffset = y_t
             L_tot = self.L_Upstream + self.L_Downstream 
         
@@ -401,6 +383,9 @@ class SwirlerMeshGenerator():
     @staticmethod 
     def Exit():
        sys.exit(0)
+       
+    def get_PeriodicOffset(self):
+        return self.PeriodicOffset
 
 
 if __name__ == "__main__":

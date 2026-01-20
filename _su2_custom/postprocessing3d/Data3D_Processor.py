@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Optional
 import warnings
 
-from postprocessing3d.cfd3d_utils import load_main_config
-from postprocessing3d.extract_probe_surfaces import extract_probe_surfaces
+from cfd3d_utils import load_main_config
+from extract_probe_surfaces import extract_probe_surfaces
 
 
 def _iter_param_dirs(sweep_root: Path):
@@ -89,5 +89,9 @@ def main(
 if __name__ == "__main__":
     # Example debug usage
     sweep_example = r"C:\path\to\Sweep\AoA_sweep"
-    cfg_example   = r"C:\path\to\post3d_config.yaml"
-    main(sweep_example, cfg_example)
+    cfg_path   = Path(r"C:\Users\BriceM\Documents\Modules\_su2_custom\postprocessing3d\post3d_config.yaml")
+    
+    # main(sweep_example, cfg_example)
+    cfg = load_main_config(cfg_path)
+    single_path = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_01")
+    _run_for_param(single_path, cfg)

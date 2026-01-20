@@ -82,6 +82,7 @@ def load_units_config(units_path: Optional[Path], fallback_from_cfg: Optional[Pa
 def read_surface_csv(
     csv_path: Path,
     columns: Dict[str, Any],
+    dist_scale_factor:float = 12
 ) -> pd.DataFrame:
     """
     Read SU2 entire_surface_restart.csv (or similar surface CSV).
@@ -161,9 +162,9 @@ def read_surface_csv(
    
     # NOTE: exports in ft xyz still
     # Convert to inches
-    df["x"] = df["x"].to_numpy() * 12
-    df["y"] = df["y"].to_numpy() * 12
-    df["z"] = df["z"].to_numpy() * 12
+    df["x"] = df["x"].to_numpy() * dist_scale_factor
+    df["y"] = df["y"].to_numpy() * dist_scale_factor
+    df["z"] = df["z"].to_numpy() * dist_scale_factor
     
     return df
 
