@@ -38,9 +38,9 @@ def base_CFD_run(cfg_filename: str, cfg_filepath: str, save_output: bool = False
 
     if save_output:
         log_file = (
-            os.path.join(cfg_filepath, cfg_filename[:-4] + ".log")
+            os.path.join(cfg_filepath, "su2.log")
             if cfg_filepath
-            else cfg_filename[:-4] + ".log"
+            else "su2.log"
         )
         # Open the log file in write mode; append total time at the end.
         with open(log_file, "w", encoding="utf-8", errors="replace") as f:

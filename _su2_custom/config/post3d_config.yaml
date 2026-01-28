@@ -25,7 +25,7 @@ units:
     # m to ft: 3.280839895
     
 
-geometry:
+geometry: # All in inches
   r_hub: 0.2
   r_pipe: 1.825
   L_tot:  17.0 # in

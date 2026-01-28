@@ -16,26 +16,26 @@ from cfd3d_utils import load_main_config
 from extract_probe_surfaces import extract_probe_surfaces
 
 
-def _iter_param_dirs(sweep_root: Path):
-    """
-    Yield immediate subdirectories under sweep_root that look like param folders
-    (e.g. AoA_10, AoA_12, ...).
-    """
-    sweep_root = Path(sweep_root)
-    for child in sorted(sweep_root.iterdir()):
-        if child.is_dir():
-            yield child
+# def _iter_param_dirs(sweep_root: Path):
+#     """
+#     Yield immediate subdirectories under sweep_root that look like param folders
+#     (e.g. AoA_10, AoA_12, ...).
+#     """
+#     sweep_root = Path(sweep_root)
+#     for child in sorted(sweep_root.iterdir()):
+#         if child.is_dir():
+#             yield child
 
 
-def _run_for_param(param_dir: Path, cfg: dict):
-    """
-    Run probe surface extraction for a single parameter directory.
-    Creates:
-      - param_dir/Probes/slice_x=..._dx=...csv  (the slabbed cross-sections)
-      - param_dir/Logs/post_summary.json/.txt   (diagnostics for each slice)
-    """
-    print(f"[INFO] 3D Processor: extracting slices for {param_dir.name}")
-    extract_probe_surfaces(param_dir, cfg)
+# def _run_for_param(param_dir: Path, cfg: dict):
+#     """
+#     Run probe surface extraction for a single parameter directory.
+#     Creates:
+#       - param_dir/Probes/slice_x=..._dx=...csv  (the slabbed cross-sections)
+#       - param_dir/Logs/post_summary.json/.txt   (diagnostics for each slice)
+#     """
+#     print(f"[INFO] 3D Processor: extracting slices for {param_dir.name}")
+#     extract_probe_surfaces(param_dir, cfg)
 
 
 def main(

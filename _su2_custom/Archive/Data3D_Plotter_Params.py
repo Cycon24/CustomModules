@@ -20,15 +20,6 @@ from  plot_cross_section_contours import plot_cross_section_contours
 from  plot_radial_averages import plot_radial_averages
 
 
-def _iter_param_dirs(sweep_root: Path):
-    """
-    Yield param subdirectories under sweep_root (AoA_10, AoA_12, ...).
-    """
-    sweep_root = Path(sweep_root)
-    for child in sorted(sweep_root.iterdir()):
-        if child.is_dir():
-            yield child
-
 
 def _run_for_param(
     param_dir: Path,

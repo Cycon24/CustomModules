@@ -164,35 +164,43 @@ def filter_df_by_point_ids(df: pd.DataFrame, pts: [int], copy_df:bool = False)->
 # =============================================================================
 # 
 # =============================================================================
-filepath = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_01")
+filepath = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_02_mdot")
 csv_name = "surface_flow_markers.csv"
 
 
-df_all_data = pd.read_csv(filepath / csv_name)
+df = pd.read_csv(filepath / csv_name)
 
 
-df_mesh_surfaces = su2_markers_dict(Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_01\Mesh.su2"))
-af_pts = get_unique_points(df_mesh_surfaces["Airfoils"])
-df_af = filter_df_by_point_ids(df_all_data, af_pts, copy_df=True)
+# df_mesh_surfaces = su2_markers_dict(Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_01\Mesh.su2"))
+# af_pts = get_unique_points(df_mesh_surfaces["Airfoils"])
+# df_af = filter_df_by_point_ids(df_all_data, af_pts, copy_df=True)
 
 # df2 = df2["Airfoils"]
 
 
 
+tol = 1e-6
 
+x_LE = 5 * 0.0254
+x_TE = 7 * 0.0254
+r_hub = 0.2 * 0.0254 
+r_duc = 1.825 * 0.0254
 
-# x_LE = 5 * 0.0254
-# x_TE = 7 * 0.0254
+# Cut down LE and TE
+df = df[(df["x"] > x_LE)] 
+df = df[(df["x"] < x_TE)]
 
-# df = df[(df["x"] > x_LE)] 
-# df = df[(df["x"] < x_TE)]
+# Cut out outter radii
+df = df[(df["y"]**2 + df["z"]**2) > r_hub**2 + tol]
+df = df[(df["y"]**2 + df["z"]**2) < r_duc**2 - tol]
 
+df.to_csv(filepath / "airfoil_data.csv", index=False)
 
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d') # Use "projection='3d'" to create 3D axes
 
 # 3. Plot the data using ax.scatter()
-ax.scatter(df_af['x'], df_af['y'], df_af['z'], marker="o")
+ax.scatter(df['x'], df['y'], df['z'], marker="o")
 
 

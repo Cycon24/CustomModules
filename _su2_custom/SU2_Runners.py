@@ -20,7 +20,8 @@ so that it is easier to run CFD by impporting this file as a module.
 
 # Solidified
 import yaml 
-from pathlib import Path 
+from pathlib import Path
+import numpy as np 
 
 import runners.SU2_base_runner as su2run
 
@@ -35,7 +36,7 @@ import meshgeneration.GMSH_3D_Swirler_Generator as gen3DSwirler
 # =============================================================================
 #  CFD Runners
 # =============================================================================
-def runSinglePoint_CFD(cfg_params:dict, msh_params:dict, filepath:Path, **kwargs):
+def runSinglePoint_CFD(cfg_params:dict, msh_params:dict, filepath:Path, flow_params:dict|None = None, **kwargs):
     # STILL NEED A 2D/3D Toggle? Or it can just be supplied in config and mesh param files?
     # Toggles
     USE_DEFAULT_MESH = kwargs.get("USE_DEFAULT_MESH", False)
@@ -74,6 +75,8 @@ def runSinglePoint_CFD(cfg_params:dict, msh_params:dict, filepath:Path, **kwargs
     # Save cfg and mesh params to file
     CFGtxt_GEN_COMPLETE = su2cfg.dict_to_cfg(cfg_params, cfgName, filepath)
     MSHtxt_GEN_COMPLETE = su2cfg.dict_to_cfg(msh_params, mshName+"_params.txt", filepath)
+    if type(flow_params) == dict:
+        su2cfg.dict_to_cfg(flow_params, f"flow_{cfgName}.txt", filepath)
     
     # Run CFD
     if (SWIRLER_GEN_COMPLETE and MSHtxt_GEN_COMPLETE and CFGtxt_GEN_COMPLETE):
@@ -282,7 +285,7 @@ def importBaseParams_filtered(solverType:str="RANS",
 
     Returns
     -------
-    (msh_params: dict, cgf_params: dict)
+    (msh_params: dict, cgf_params: dict, flow_params: dict)
         Returns the two dictionaries of unnested parameters and their values.
 
     '''
@@ -299,6 +302,7 @@ def importBaseParams_filtered(solverType:str="RANS",
                   **cfg_params_raw["BoundaryConditions"],
                   **cfg_params_raw["Convergence"],
                   **cfg_params_raw["Outputs"]}
+    flow_params = {**cfg_params_raw["FlowConditions"]}
     
     # Add specific based on solver and mesh:
     match solverType:
@@ -331,22 +335,30 @@ def importBaseParams_filtered(solverType:str="RANS",
             raise ValueError(f"[Error]\t Incorrect meshType imported: {meshType}\n\t Must be '2D' or '3D'")
     
     
-    return msh_params, cfg_params
+    return msh_params, cfg_params, flow_params
 
 def updateFlow(cfg_params:dict):
     T = cfg_params["FlowConditions"]["Inlet_Static_Temperature"]
     P = cfg_params["FlowConditions"]["Inlet_Static_Pressure"]
-    M = cfg_params["FlowConditions"]["Inlet_Target_Mach"]
-    Ttot = flowcalc.Stag_Temperature(M, T, cfg_params["GasProperties"]["GAMMA_VALUE"])
-    Ptot = flowcalc.Stag_Pressure(M, P, cfg_params["GasProperties"]["GAMMA_VALUE"])
+    # M = cfg_params["FlowConditions"]["Inlet_Target_Mach"]
+    gam = cfg_params["GasProperties"]["GAMMA_VALUE"]
     Pb = cfg_params["FlowConditions"]["Back_Pressure"]
     R = cfg_params["GasProperties"]["GAS_CONSTANT"]
     A = cfg_params["FlowConditions"]["Inlet_Area"]
     mdot = cfg_params["FlowConditions"]["Inlet_Target_mdot"]         
-                        
+         
+    # Calculate density and velocity from static conditions and target
+    # mass flow rate               
     rho = P / (R*T)
     V = mdot / (rho * A)
+    M = V / np.sqrt(gam * R * T)
     
+    Ttot = flowcalc.Stag_Temperature(M, T, gam)
+    Ptot = flowcalc.Stag_Pressure(M, P, gam)
+    
+    # print(f"V1 = {V:.3f} m/s\t V2 = {V2:.3f}m/s")
+    # print(f"rho1 = {rho:.3f} kg/m^3\t rho2 = {rho2:.3f}kg/m^3")
+    # print(f"P1 = {P:.3f} Pa\t P2 = {P2:.3f} Pa")
     
     # Make updates:
     if cfg_params["BoundaryConditions"]["INLET_TYPE"] == "MASS_FLOW":
@@ -369,10 +381,11 @@ def updateFlow(cfg_params:dict):
 #  Testing
 # =============================================================================
 if __name__=="__main__":
-    msh_params, cfg_params = importBaseParams_filtered("RANS", "3D")
-    cfg_params["ITER"] = 10000 
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_02_mdot")
+    
+    msh_params, cfg_params, flow_params = importBaseParams_filtered("RANS", "3D")
+    cfg_params["ITER"] = 15000 
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_07_tot")
     # msh_params["FileLocation"] = filepath
     # generateMesh(msh_params)
-    runSinglePoint_CFD(cfg_params, msh_params, filepath)
+    runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)
     # processSweepData(filepath, IS_3D=True)

@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 21 18:26:26 2026
+
+@author: BriceM
+"""
 import json
-import math
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
@@ -12,11 +17,23 @@ import matplotlib.tri as mtri
 # Filesystem helpers
 # -------------------------------------------------
 
-def ensure_dir(p: Path) -> None:
+def ensure_dir(p: Path) -> Path:
     """
     Create directory p (and parents) if it doesn't already exist.
+    Returns the directory p.
     """
     p.mkdir(parents=True, exist_ok=True)
+    return p
+
+def iter_param_dirs(sweep_root: Path):
+    """
+    Yield immediate subdirectories under sweep_root that look like param folders
+    (e.g. AoA_10, AoA_12, ...).
+    """
+    sweep_root = Path(sweep_root)
+    for child in sorted(sweep_root.iterdir()):
+        if child.is_dir():
+            yield child
 
 
 # -------------------------------------------------
@@ -76,8 +93,28 @@ def load_units_config(units_path: Optional[Path], fallback_from_cfg: Optional[Pa
 
 
 # -------------------------------------------------
-# Reading SU2 surface CSV
+# Reading SU2 mesh or surface CSVs
 # -------------------------------------------------
+
+# def sanitize_colname(name: str) -> str:
+#     '''
+#     Removes excess spaces and quotations that can be imported.
+
+#     Parameters
+#     ----------
+#     name : str
+#         Column name or any other string to be sanitized.
+
+#     Returns
+#     -------
+#     str
+#         Sanitized String.
+
+#     '''
+#     s = str(name).strip()
+#     if len(s) >= 2 and s[0] == s[-1] and s[0] in {"'", '"'}:
+#         s = s[1:-1]
+#     return s.strip()
 
 def read_surface_csv(
     csv_path: Path,
@@ -104,7 +141,8 @@ def read_surface_csv(
 
     Returns DataFrame containing:
         x,y,z,rho,Mx,My,Mz,Vx,Vy,Vz,Mach,Pressure,Temperature
-        (some may be derived, see below)
+    The names of each value is mapped internal to this function, not from
+    the config file.
     """
     csv_path = Path(csv_path)
 
@@ -161,11 +199,38 @@ def read_surface_csv(
         
    
     # NOTE: exports in ft xyz still
-    # Convert to inches
+    # Convert by the scaling factor
     df["x"] = df["x"].to_numpy() * dist_scale_factor
     df["y"] = df["y"].to_numpy() * dist_scale_factor
     df["z"] = df["z"].to_numpy() * dist_scale_factor
     
+    return df
+
+def read_history_csv(param_dir: Path, HISTORY_FILENAME:str = "history.csv",
+                     RESIDUALS_HEADERS: [str] = ['Inner_Iter', "Time(sec)", 'rms[Rho]',
+                            'rms[RhoU]', 'rms[RhoV]','rms[RhoW]', 'rms[RhoE]', 'rms[nu]', "CD", "CL"]) -> pd.DataFrame | None:
+    """
+    Read and sanitize history.csv robustly:
+    - Normalize newlines and strip trailing commas that cause extra fields
+    - Try auto-sep first; fallback to combined regex (comma OR whitespace)
+    - Skip malformed lines rather than failing
+    - Sanitize headers (strip spaces/quotes)
+    """
+    src = param_dir / HISTORY_FILENAME
+    if not src.exists():
+        print(f"[WARN] Missing {HISTORY_FILENAME} in {param_dir}. Skipping residuals plot.")
+        return None
+    
+    df = pd.read_csv(src)
+    df.columns = RESIDUALS_HEADERS[:len(df.columns.tolist())]
+    
+
+    if df is None or df.empty:
+        print(f"[WARN] Empty/invalid {HISTORY_FILENAME} in {param_dir}.")
+        return None
+
+    # Clean headers
+    # df = df.rename(columns=_sanitize_colname)
     return df
 
 
@@ -226,8 +291,10 @@ def add_cylindrical_about_x(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # -------------------------------------------------
-# Slab extraction
+# Slab and probe extraction
 # -------------------------------------------------
+
+
 
 def extract_slab(
     df: pd.DataFrame,
