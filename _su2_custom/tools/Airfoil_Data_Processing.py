@@ -164,7 +164,7 @@ def filter_df_by_point_ids(df: pd.DataFrame, pts: [int], copy_df:bool = False)->
 # =============================================================================
 # 
 # =============================================================================
-filepath = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_02_mdot")
+filepath = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_10_tot")
 csv_name = "surface_flow_markers.csv"
 
 

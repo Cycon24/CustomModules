@@ -48,7 +48,7 @@ mesh2D:
 # 3D Parameters    
 mesh3D: 
     MinMeshSize: !!float 1e-6       # 3D mesh size control?
-    MaxMeshSize:         0.5  #05       # ^
+    MaxMeshSize:         0.05  #05       # ^
     
     # Airfoil:
     NACA_root: "4406"   # root (innet) 4-digit airfoil

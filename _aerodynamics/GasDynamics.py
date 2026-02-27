@@ -355,7 +355,7 @@ def Mach_at_A(Ai_At, Gamma=1.4):
         return first_num/first_den + second
 
     # Solve for first root (subsonic solution)
-    low_r, high_r = rt.rootsearch(FA_ratio, 0.001, 8, 0.01)
+    low_r, high_r = rt.rootsearch(FA_ratio, 0.00001, 1, 0.01)
     Msub = rt.newtonRaphson(FA_ratio, dAR_M, low_r, high_r)
 
     # Solve for second root (sonic solution)

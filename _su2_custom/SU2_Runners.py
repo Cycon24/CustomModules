@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np 
 
 import runners.SU2_base_runner as su2run
+# from postprocessing.Base_Plotter import process_single_run
 
 import tools.Parameter_Adjustor as PA 
 import tools.File_Manipulator as su2cfg 
@@ -76,7 +77,7 @@ def runSinglePoint_CFD(cfg_params:dict, msh_params:dict, filepath:Path, flow_par
     CFGtxt_GEN_COMPLETE = su2cfg.dict_to_cfg(cfg_params, cfgName, filepath)
     MSHtxt_GEN_COMPLETE = su2cfg.dict_to_cfg(msh_params, mshName+"_params.txt", filepath)
     if type(flow_params) == dict:
-        su2cfg.dict_to_cfg(flow_params, f"flow_{cfgName}.txt", filepath)
+        su2cfg.dict_to_cfg(flow_params, f"flow_params.txt", filepath)
     
     # Run CFD
     if (SWIRLER_GEN_COMPLETE and MSHtxt_GEN_COMPLETE and CFGtxt_GEN_COMPLETE):
@@ -116,17 +117,17 @@ def runParameterSweep_CFD(sweep_params:dict, cfg_params:dict, msh_params:dict, s
                 case int():
                     endStr = f"_{val}"
                 case float():
-                    endStr = f"_{val:.0f}"
+                    endStr = f"_{val:.2f}".replace(".","-")
                 case str():
                     endStr = "_" + val 
                 case list():
                     endStr = ""
                     for v in val:
-                        endStr += f"_{v:.0f}"
+                        endStr += f"_{v:.2f}".replace(".","-")
                 case _:
                     endStr = f"_{val}"
                     
-            run_dir = param_dir + f"{key}{endStr}"
+            run_dir = param_dir / f"{key}{endStr}"
             mshName = "Mesh_" + key + endStr 
             cfgName = "CFG_"+ key + endStr + ".cfg" 
             
@@ -171,24 +172,25 @@ def generateMesh(mesh_parameters:dict, OpenGMSHVisual=True):
 # =============================================================================
 #  Data Processors
 # =============================================================================
-def processSweepData(filepath:str, IS_3D:bool=False, 
-                     cfg_path:str   = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\post3d_config.yaml',
-                     units_path:str = r'C:\Users\BriceM\Documents\Modules\_su2_custom\3dpostprocessing\plot_units.yaml',
-                     dpi:int=250,
-                     tol_in = 0.1):
+def processpParamData(filepath:str, IS_3D:bool=True, 
+                     cfg_path:str|None   = None,
+                     units_path:str|None = None,
+                     ):
+    process_single_run(filepath, cfg_path, units_path)
     
-    if not IS_3D:
-        DP.main(filepath, tol_in=tol_in)
-        DPP.main(filepath, "png", dpi=dpi)
-        DPS.main(filepath, "png", dpi=dpi)
-    else:
-        # 3-D pipeline
-        try:
-            DP3.main(filepath, cfg_path, units_path=units_path)
-            DPP3.main(filepath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
-            DPS3.main(filepath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
-        except:
-            print("[Error]\t Error in 3d processing")
+    
+    # if not IS_3D:
+    #     DP.main(filepath, tol_in=tol_in)
+    #     DPP.main(filepath, "png", dpi=dpi)
+    #     DPS.main(filepath, "png", dpi=dpi)
+    # else:
+    #     # 3-D pipeline
+    #     try:
+    #         DP3.main(filepath, cfg_path, units_path=units_path)
+    #         DPP3.main(filepath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
+    #         DPS3.main(filepath, cfg_path, units_path=units_path, img_format="png", dpi=dpi)
+    #     except:
+    #         print("[Error]\t Error in 3d processing")
     return None
             
 
@@ -381,11 +383,15 @@ def updateFlow(cfg_params:dict):
 #  Testing
 # =============================================================================
 if __name__=="__main__":
-    
     msh_params, cfg_params, flow_params = importBaseParams_filtered("RANS", "3D")
-    cfg_params["ITER"] = 15000 
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_07_tot")
+    cfg_params["ITER"] = 20000 
+    # msh_params["BladeAoA_root"] = 5.0 
+    # msh_params['BladeAoA_tip'] = 10.0
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow")
     # msh_params["FileLocation"] = filepath
     # generateMesh(msh_params)
     runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)
+    # runParameterSweep_CFD({"AoA_rt": [[5.0, 12.0], [5.0, 16.0], [5.0, 20.0]]}, cfg_params, msh_params, filepath)
+    
+    # processpParamData(filepath)
     # processSweepData(filepath, IS_3D=True)

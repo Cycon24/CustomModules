@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import Delaunay
 from scipy.spatial.distance import cdist
+import _aerodynamics.GasDynamics as GD
 
 
 def import_csv_to_df(filename:str, filepath:str):
@@ -15,10 +16,51 @@ def import_csv_to_df(filename:str, filepath:str):
     return df
 
 def extract_points_in_plane(plane_x:float, dataframe, tol:float=1e-6):
+    '''
+    Extracts a slice (all points) from dataframe at a specified axial position (x) in the units
+    of the dataframe (m as of 20260216) within a tolerance of tol. 
+    
+    1 m = 100/2.54 in 
+
+    Parameters
+    ----------
+    plane_x : float
+        Axial location.
+    dataframe : DataFrame
+        dataframe of entire mesh and the values at each point.
+    tol : float, optional
+        Maximum axial distance from which points are pulled from plane_x. The default is 1e-6.
+
+    Returns
+    -------
+    new_df : DataFrame
+        The sliced dataframe containing only points within tol of the plane at plane_x.
+
+    '''
     new_df = dataframe[(abs(dataframe['x']-plane_x)) < tol]
     return new_df
 
 def generate_plane_csv(plane_x:float, filename:str, filepath:str, plane_filename:str="plane") -> None:
+    '''
+    Save the plane pulled from plane_x to a csv file.
+
+    Parameters
+    ----------
+    plane_x : float
+        DESCRIPTION.
+    filename : str
+        DESCRIPTION.
+    filepath : str
+        DESCRIPTION.
+    plane_filename : str, optional
+        DESCRIPTION. The default is "plane".
+
+    Returns
+    -------
+    None
+        DESCRIPTION.
+
+    '''
     extract_points_in_plane(plane_x,
                             import_csv_to_df(filename, filepath)
                             ).save_csv(filepath + "\\" + plane_filename + ".csv", index=False)
@@ -113,24 +155,78 @@ def mass_flow_rate_yz(
     return mdot, diagnostics
 
 
+def total_pressure_slice(
+    df: pd.DataFrame,
+    Gamma: float = 1.4,
+    ):
+    """
+    Compute mass total pressure in a slice of the mesh. Calculated
+        with isentropic relations from mach and pressure at each point
+
+    Parameters
+    ----------
+    df : DataFrame with columns y, z, Pressyre, Mach 
+    Gamma : Float equal to the specific heat ratio
+
+    Returns
+    -------
+    Ptot : array of floats
+        Total pressures in same units as original df
+    new_df : DataFrame with a Total Pressure column added
+    """
+    p_col = "Pressure"
+    M_col = "Mach"
+    
+    
+    # for r in range(0, len(Ptots)):
+    Ptots = np.array(df[p_col] * GD.Po_P_ratio(df[M_col], Gamma))
+    new_df = df.copy() 
+    new_df["Total Pressure"] = Ptots
+    
+    return Ptots, new_df
+
+
+def swirl_number(angle #df: pd.DataFrame,
+                #edge_factor: float = 3.0,  # larger = less aggressive masking
+                #return_diagnostics: bool = False,
+                #gc:float = 1
+                ):
+    SN = (2/3) * np.tan(np.deg2rad(angle))
+    return SN
+
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     filename = "entire_surface_restart.csv"
-    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\BackPressure_SI_07_tot"
+    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\AoA_rt_sweep_SI\AoA_rt_sweep\AoA_rt_2-50_4-00"
     
     imported = import_csv_to_df(filename, filelocation)
     inlet = extract_points_in_plane(0, imported, tol=0.01e-3)
+    outlet = extract_points_in_plane(17*2.54/100, imported, tol=0.01e-3)
+    
     mdot, diag = mass_flow_rate_yz(inlet, return_diagnostics=True, gc=1)
+    Ptots_i, inlet =  total_pressure_slice(inlet, 1.4)
+    Ptots_o, outlet =  total_pressure_slice(outlet, 1.4)
+    dPtots = Ptots_o - Ptots_i 
+    pi_s = Ptots_o / Ptots_i
+    pi_avg = np.average(pi_s)
     
     # print(f"mdot_s = {mdot:.4f} lbm/s")
     # print(f"mdot_t = {6*mdot:.4f} lbm/s")
     print(f"mdot_t = {6*mdot:.4f} kg/s")
-    plt.figure()
-    plt.scatter(inlet["y"], inlet["z"])
-    plt.ylabel("z [ft]")
-    plt.xlabel("y [ft]")
+    print(f"pi_avg = {pi_avg:.4f} ")
+    # plt.figure()
+    # plt.scatter(inlet["y"], inlet["z"])
+    # plt.ylabel("z [ft]")
+    # plt.xlabel("y [ft]")
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.scatter(inlet["y"], inlet["z"], pi_s)
+    ax.set_xlabel('y')
+    ax.set_ylabel('z')
+    ax.set_zlabel(r'$\pi$')
     
     
     

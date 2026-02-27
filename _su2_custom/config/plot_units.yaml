@@ -3,19 +3,19 @@ title:
   template_multi: "{var}: {param}"
 
 units:
-    US:
-      Mach: ""
-      Vmag: "ft/s"
-      Vx: "ft/s"
-      Vr: "ft/s"
-      Vtheta: "ft/s"
-      Pressure: "psf"
-      Temperature: "R"
-      Momentum_x: "slug/(ft^2·s)"
-      Momentum_r: "slug/(ft^2·s)"
-      Momentum_theta: "slug/(ft^2·s)"
-      alpha_deg: "deg"
-    US:
+    # US:
+    #   Mach: ""
+    #   Vmag: "ft/s"
+    #   Vx: "ft/s"
+    #   Vr: "ft/s"
+    #   Vtheta: "ft/s"
+    #   Pressure: "psf"
+    #   Temperature: "R"
+    #   Momentum_x: "slug/(ft^2·s)"
+    #   Momentum_r: "slug/(ft^2·s)"
+    #   Momentum_theta: "slug/(ft^2·s)"
+    #   alpha_deg: "deg"
+    SI:
       Mach: ""
       Vmag: "m/s"
       Vx: "m/s"
