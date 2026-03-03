@@ -7,7 +7,7 @@ Created on Fri Mar 24 11:34:05 2023
 # Imports
 import sys
 # sys.path.append("C:\\Users\\cycon\\Documents\\Modules")
-sys.path.append("C:\\Users\\Cycon Gaming Night\\Documents\\cModules\\")
+# sys.path.append("C:\\Users\\Cycon Gaming Night\\Documents\\cModules\\")
 
 import _tools.Interpolator as intrp
 import _tools.RootAlgorithms as rt

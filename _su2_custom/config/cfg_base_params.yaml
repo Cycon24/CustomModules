@@ -7,7 +7,7 @@
 
 FlowConditions:
     Inlet_Static_Temperature:       293.15 #922.22 # K or 1660 R
-    Inlet_Static_Pressure: !!float  145.5e3  # Pa or lbf/ft^2
+    Inlet_Static_Pressure: !!float  115.5e3  # Pa or lbf/ft^2
     # Inlet_Target_Mach:              0.30    # Mach number
     Inlet_Target_mdot:              0.5    # mdot, kg/s or slug/s         
     Back_Pressure: !!float          101.325e3 # Pa or lbf/ft^2
