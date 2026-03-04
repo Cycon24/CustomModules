@@ -384,10 +384,10 @@ def updateFlow(cfg_params:dict):
 # =============================================================================
 if __name__=="__main__":
     msh_params, cfg_params, flow_params = importBaseParams_filtered("RANS", "3D")
-    cfg_params["ITER"] = 20000 
+    cfg_params["ITER"] = 10000 
     # msh_params["BladeAoA_root"] = 5.0 
     # msh_params['BladeAoA_tip'] = 10.0
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test03")
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test04")
     # msh_params["FileLocation"] = filepath
     # generateMesh(msh_params)
     runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)
