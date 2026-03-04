@@ -20,7 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def generateNACA4(NACA4, c=1, numPoints=100):
+def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
     '''
     Generates a list of points [x, y] that defines the full airfoil curve.
 
@@ -88,7 +88,7 @@ def generateNACA4(NACA4, c=1, numPoints=100):
         return yt
     
     
-    beta = np.linspace(0, np.pi, 100, endpoint=True)
+    beta = np.linspace(0, np.pi, numPoints, endpoint=True)
     x = (1-np.cos(beta))/2 
     
     theta = np.arctan(dyc_dx(x))
@@ -99,17 +99,45 @@ def generateNACA4(NACA4, c=1, numPoints=100):
     yu = c*(yc(x) + np.multiply(yt(x), np.cos(theta)))
     yl = c*(yc(x) - np.multiply(yt(x), np.cos(theta)))
     
-    points = np.zeros((len(beta)*2-2, 3))
+    if cutTailPts > 0:
+        xu = xu[:-cutTailPts]
+        xl = xl[:-cutTailPts]
+        yu = yu[:-cutTailPts]
+        yl = yl[:-cutTailPts]
+    points = np.zeros((len(beta)*2 - 2 - 2*cutTailPts, 3))
     
     # for i, p in enumerate(points[:,0]):
     #     points[i, :] = np.array([xu[i]])
+    
+        
     
     # Set up the points on upper surface
     for i in range(0, len(xu)):
         points[i, :] = xu[i], yu[i], 0
         
     for i in range(1, len(xl)-1):
-        points[i+len(xu)-1] = xl[len(xu)-1-i], yl[len(xu)-1-i], 0
+        points[i+len(xu)-1] = xl[len(xl)-1-i], yl[len(yl)-1-i], 0
+        
+        
+    # Ensure all points abide by the minimum thickness criteria:
+        # for any given point, the distance between it and every point on the opposing curve
+        # must be at least minTail_tc * chord apart.
+    # if minTail_tc != None:
+    #     for i, p in enumerate(points):
+    #         if p[0] > 0.5*c: # in tail
+    #             # check two nearest points
+    #             # Distances between two points (total)
+    #             dx1 = points[i-1][0]-p[0]
+    #             dy1 = points[i-1][1]-p[1]
+                
+    #             dx2 = points[i+1][0]-p[0]
+    #             dy2 = points[i+1][1]-p[1]
+                
+    #             dist1 = np.sqrt(dx1**2 + dy1**2)
+    #             dist2 = np.sqrt(dx2**2 + dy2**2)
+                
+    #             if dist1 < minTail_tc*c or dist2 < minTail_tc
+        
         
     # reconnect to LE
     #points[-1, :] = xu[0], yu[0]

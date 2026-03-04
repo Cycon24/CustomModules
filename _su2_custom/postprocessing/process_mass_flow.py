@@ -370,7 +370,7 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     filename = "entire_surface_restart.csv"
-    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test02"
+    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test03"
     
     imported = import_csv_to_df(filename, filelocation)
     inlet = extract_points_in_plane(0, imported, tol=0.01e-3)
