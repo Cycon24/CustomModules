@@ -102,9 +102,9 @@ class FannoDuct():
                 T1_Tstar_j = fanno_j['T_Tstar']
                 
                 # Get Mach right after the shock
-                Mj_s = Mach2_n(fanno_j['Mach'],Gamma=self.Gamma)
-                P2_P1 = P2_P1_n(fanno_j['Mach'],Gamma=self.Gamma)
-                T2_T1 = T2_T1_n(fanno_j['Mach'],Gamma=self.Gamma)
+                Mj_s = NS_Mach2(fanno_j['Mach'],Gamma=self.Gamma)
+                P2_P1 = NS_P2_P1(fanno_j['Mach'],Gamma=self.Gamma)
+                T2_T1 = NS_T2_T1(fanno_j['Mach'],Gamma=self.Gamma)
                 MachKey = 'Mach'# change Mach  key to retrieve subsonic version
                
                 # Find fanno flow cond. after shck
@@ -131,7 +131,8 @@ class FannoDuct():
                 P_Pos[j:] = np.zeros(P_Pos[j:].shape)
                 T_Tos[j:] = np.zeros(P_Pos[j:].shape)
                 Ms[j:]    = np.zeros(P_Pos[j:].shape)
-                return L_Ds, P_Pos, T_Tos, Ms 
+                break 
+                # return L_Ds, P_Pos, T_Tos, Ms 
             
             fanno_j = Fanno_Flow(fLmax_D=fLmax_D_stat, Gamma=self.Gamma, ForceSupersonic=MachKey=='Mach_sup')
             P_Pos[j] = fanno_j['P_Pstar']*Pstar_Poi
@@ -223,9 +224,9 @@ Discovered Observations:
 For supersonic flow in a duct where L/D < Lmax/D
     - The flow will remain supersonic if Pe > Pb assuming no shock occurs
         - A constant regime, resistant to ΔPb as long as Pe > Pb
-    - As Pe increases, as shock will form at the exit plane first
+    - As Pb increases, as shock will form at the exit plane first
         - A shock at the exit plane will produce the lowest Pe for this duct
-    - As Pe increases further, it will reach max Pe for shock in duct
+    - As Pb increases further, it will reach max Pe for shock in duct
         - A shock at the inlet plane will produce the highest Pe for this duct 
         (without affecting conditions before duct)
     - As Pe increases even more, the conditions prior to the inlet will be affected
