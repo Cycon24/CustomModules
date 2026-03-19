@@ -20,7 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
+def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0, minTail_t_c: float = 0):
     '''
     Generates a list of points [x, y] that defines the full airfoil curve.
 
@@ -34,6 +34,12 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
     numPoints : Int
         The number of points along which the airfoil will be generated.
         The entire curve will be defined by numPoints*2-2  points.
+    cutTailPts : Int
+        The number of points to remove from the TE of the airfoil, can be used to reduce tail
+        thickness arbitrarily.
+    minTail_t_c : Float
+        The minimum thickness of the TE over the chord length: t_min / c
+        Performs a similar function to cutTailPts but does so based on the thickness of the blade. 
         
     Returns
     -------
@@ -88,6 +94,7 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
         return yt
     
     
+    
     beta = np.linspace(0, np.pi, numPoints, endpoint=True)
     x = (1-np.cos(beta))/2 
     
@@ -105,6 +112,20 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
         yu = yu[:-cutTailPts]
         yl = yl[:-cutTailPts]
     points = np.zeros((len(beta)*2 - 2 - 2*cutTailPts, 3))
+    
+    if minTail_t_c > 0:
+        cutIdx = -1 
+        # loop through list and pull y-values at the same x-locations (will have same idx)
+        # check if distances < min thickness, if so, update cut idx and break loop
+        # then cut points
+        for i in range(len(x)//2, len(x)):
+            if yu[i] - yl[i] < minTail_t_c*c:
+                cutIdx = i 
+                break 
+        xu = xu[:cutIdx]
+        xl = xl[:cutIdx]
+        yu = yu[:cutIdx]
+        yl = yl[:cutIdx]
     
     # for i, p in enumerate(points[:,0]):
     #     points[i, :] = np.array([xu[i]])
@@ -144,7 +165,9 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0):
     
     return points #, xu,xl,yu,yl 
 
-def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang=None, mesh_size=0):
+def generateGMSH_NACA4(geo, NACA4, c=1, dx=0, dy=0, dz=0, rot_ang=None, 
+                       mesh_size=0, numPoints=100,
+                       cutTailPts: int = 0, minTail_t_c: float = 0):
     '''
     Utilizes a gmsh object to generate the points, lines, and curve for a
     NACA 4-digit airfoil. 
@@ -179,7 +202,7 @@ def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang
     af_point_tags = []
     af_line_tags = [] 
     
-    pts = generateNACA4(NACA4, c, numPoints)
+    pts = generateNACA4(NACA4, c, numPoints=numPoints, cutTailPts=cutTailPts, minTail_t_c=minTail_t_c)
     if  rot_ang != None:
         # Rotate each row point about its own (0,0,0) aka LE
         for r in range(0,len(pts[:,0])):
@@ -205,13 +228,15 @@ def generateGMSH_NACA4(geo, NACA4, dx=0, dy=0, dz=0, c=1, numPoints=100, rot_ang
     
 
 if __name__=="__main__":
-    pts = generateNACA4("8412", c=1)
-    pts2 = generateNACA4("8412", c=2)
+    plt.close()
+    mint = (1/10) / 2.54
+    pts = generateNACA4("6406", c=2, numPoints=400)
+    pts2 = generateNACA4("6406", c=2, minTail_t_c= mint/2)
     print("plotting")
     plt.figure()
     # plt.plot(xU, yU)
     # plt.plot(xL, yL)
-    plt.plot(pts[:,0], pts[:,1])
+    # plt.plot(pts[:,0], pts[:,1])
     plt.plot(pts2[:,0], pts2[:,1])
     plt.ylim([-0.6,0.6])
     plt.xlim([-0.1,2.1])
