@@ -6,12 +6,15 @@
 # """
 
 FlowConditions:
-    Inlet_Static_Temperature:       293.15 #922.22 # K or 1660 R
-    Inlet_Static_Pressure: !!float  107.5e3  # Pa or lbf/ft^2
+# Cold flow: T=293.15K P=107.5kPa
+# Heated float: T=922.22K P = 145.5kPa
+    Inlet_Static_Temperature:       922.22 #293.15 #922.22 # K or 1660 R
+    Inlet_Static_Pressure: !!float  126.2e3  # Pa or lbf/ft^2
     # Inlet_Target_Mach:              0.30    # Mach number
     Inlet_Target_mdot:              0.5    # mdot, kg/s or slug/s         
     Back_Pressure: !!float          101.325e3 # Pa or lbf/ft^2
-    Inlet_Area:                     0.00666954 # m^2
+    r_tip_in:                          1.825 # in
+    r_hub_in:                          0.2 # in
     
 General:
     MESH_FORMAT: "SU2"

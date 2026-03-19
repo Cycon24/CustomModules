@@ -16,7 +16,7 @@ General:
     
     GenPointSize: 0.05       # element size at each defined point
     AF_pointSize: 0.01     # float, 0 to be overwritten by GenPointSize
-    AF_numPoints: 500   # int, number of points along the airfoil curve
+    AF_numPoints: 100   # int, number of points along the airfoil curve
     
     L_Upstream: 5           # in, distance from inlet to LE
     L_Downstream: 12        # in, distance from LE to outlet
@@ -51,15 +51,15 @@ mesh3D:
     MaxMeshSize:         0.05  #05       # ^
     
     # Airfoil:
-    NACA_root: "4406"   # root (innet) 4-digit airfoil
-    NACA_tip:  "6406"   # tip (outter)
-    BladeAoA_root: 2.5  # deg, root profile angle of attack
-    BladeAoA_tip: 4.0  # deg, tip profile angle of attack
+    NACA_root: "6406"   # root (innet) 4-digit airfoil
+    NACA_tip:  "8406"   # tip (outter)
+    BladeAoA_root: 5.0  # deg, root profile angle of attack
+    BladeAoA_tip: 16.0  # deg, tip profile angle of attack
     chord_root: 1.0     # in, root profile chord length
     chord_tip:  2.0     # in, tip profile chord length
         
     # Duct:
-    r_hub: 0.20         # in, radius of the root hub
+    r_hub: 0.2         # in, radius of the root hub
     r_duct: 1.825       # in, radius of the duct of swirler
     r_pipe: 2.000       # in, radius of pipe (ignored right now)
         

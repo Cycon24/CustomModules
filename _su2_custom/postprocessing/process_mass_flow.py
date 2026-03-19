@@ -370,17 +370,21 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     filename = "entire_surface_restart.csv"
-    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test03"
+    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MedSwirl_01\Test03"
     
     imported = import_csv_to_df(filename, filelocation)
     inlet = extract_points_in_plane(0, imported, tol=0.01e-3)
     outlet = extract_points_in_plane(17*2.54/100, imported, tol=0.01e-3)
+    TE_slice = extract_points_in_plane(8*2.54/100, imported, tol=0.10e-3)
     
     mdot, diag = mass_flow_rate_yz(inlet, return_diagnostics=True, gc=1)
+    mdot_o, diag_o = mass_flow_rate_yz(outlet, return_diagnostics=True, gc=1)
     R_refs = np.linspace(0.2*2.54/100, 2.0*2.54/100, 100)
     # SNs = []
     # for R_ref in R_refs:
     SN, diag_SN = swirl_number_yz(outlet, return_diagnostics=True, R_ref=None) #2.0*2.54/100)
+    SN_TE, diag_SN_TE = swirl_number_yz(TE_slice, return_diagnostics=True, R_ref=None) #2.0*2.54/100)
+   
         # SNs.append(SN)
     Ptots_i, inlet =  total_pressure_slice(inlet, 1.4)
     Ptots_o, outlet =  total_pressure_slice(outlet, 1.4)
@@ -388,14 +392,18 @@ if __name__=="__main__":
     pi_s = Ptots_o / Ptots_i
     pi_avg = np.average(pi_s)
     
+    dmdot = 6*(mdot_o - mdot)
     # print(f"mdot_s = {mdot:.4f} lbm/s")
     # print(f"mdot_t = {6*mdot:.4f} lbm/s")
     print(r"- $\dot{m}$" + f" = {6*mdot:.4f} kg/s")
+    print(r"- $\Delta\dot{m}$" + f" = {dmdot:.4f} kg/s")
     print(r"- $\pi_{avg}$" + f" = {pi_avg:.4f} ")
     print(r"- $\pi_{min}$" + f" = {np.min(pi_s):.4f} ")
     print(r"- $\pi_{max}$" + f" = {np.max(pi_s):.4f} ")
     print(f"- SN     = {SN:.4f}")
     print(r"- $\alpha_{SN}$" + f"     = {swirl_angle(SN):.4f}" + r"$^o$")
+    print(r"- SN_{TE}   = "+f"{SN_TE:.4f}")
+    print(r"- $\alpha_{SN, TE}$" + f"     = {swirl_angle(SN_TE):.4f}" + r"$^o$")
     # plt.figure()
     # plt.scatter(inlet["y"], inlet["z"])
     # plt.ylabel("z [ft]")

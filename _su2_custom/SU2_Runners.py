@@ -346,10 +346,12 @@ def updateFlow(cfg_params:dict):
     gam = cfg_params["GasProperties"]["GAMMA_VALUE"]
     Pb = cfg_params["FlowConditions"]["Back_Pressure"]
     R = cfg_params["GasProperties"]["GAS_CONSTANT"]
-    A = cfg_params["FlowConditions"]["Inlet_Area"]
+    rh = cfg_params["FlowConditions"]["r_hub_in"] * 2.54 / 100
+    rt = cfg_params["FlowConditions"]["r_tip_in"] * 2.54 / 100
     mdot = cfg_params["FlowConditions"]["Inlet_Target_mdot"]         
          
     # Calculate density and velocity from static conditions and target
+    A = np.pi*(rt**2 - rh**2)
     # mass flow rate               
     rho = P / (R*T)
     V = mdot / (rho * A)
@@ -384,12 +386,12 @@ def updateFlow(cfg_params:dict):
 # =============================================================================
 if __name__=="__main__":
     msh_params, cfg_params, flow_params = importBaseParams_filtered("RANS", "3D")
-    cfg_params["ITER"] = 10000 
+    cfg_params["ITER"] = 20000 
     # msh_params["BladeAoA_root"] = 5.0 
     # msh_params['BladeAoA_tip'] = 10.0
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\ColdFlow\Test04")
-    # msh_params["FileLocation"] = filepath
-    # generateMesh(msh_params)
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MedSwirl_01\Test03")
+    # msh_params["FileLocation"] = str(filepath)
+    # generateMesh(msh_params, OpenGMSHVisual=True)
     runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)
     # runParameterSweep_CFD({"AoA_rt": [[5.0, 12.0], [5.0, 16.0], [5.0, 20.0]]}, cfg_params, msh_params, filepath)
     

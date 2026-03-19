@@ -323,8 +323,9 @@ def GenerateMesh3D(**kwargs):
     geo = gmsh.model.occ
     
     # 1) Airfoil loft (root & tip)
+    # Root Blade
     rotation_angles = [0, 0, -AoA_r]
-    dxdydz = [L_Upstream, 0, r_hub - intersect_tol]
+    dxdydz = [L_Upstream, 0, r_hub - intersect_tol]  
     afcurve_r, af_line_tags_r, af_point_tags_r = AG.generateGMSH_NACA4(
         geo, NACA_r, dxdydz[0], dxdydz[1], dxdydz[2],
         c=chord_r, numPoints=n_af_pts, rot_ang=rotation_angles,
@@ -332,8 +333,9 @@ def GenerateMesh3D(**kwargs):
     )
     gmsh.model.occ.synchronize()
     
+    # Tip Blade
     rotation_angles = [0, 0, -AoA_t]
-    dxdydz = [L_Upstream, 0, r_duct + intersect_tol]
+    dxdydz = [L_Upstream, 0, r_duct + intersect_tol] 
     afcurve_t, af_line_tags_t, af_point_tags_t = AG.generateGMSH_NACA4(
         geo, NACA_t, dxdydz[0], dxdydz[1], dxdydz[2],
         c=chord_t, numPoints=n_af_pts, rot_ang=rotation_angles,
