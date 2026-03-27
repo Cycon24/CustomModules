@@ -105,13 +105,12 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0, minTail_t_c: f
     
     yu = c*(yc(x) + np.multiply(yt(x), np.cos(theta)))
     yl = c*(yc(x) - np.multiply(yt(x), np.cos(theta)))
-    
+    # print(len(xu))
     if cutTailPts > 0:
         xu = xu[:-cutTailPts]
         xl = xl[:-cutTailPts]
         yu = yu[:-cutTailPts]
         yl = yl[:-cutTailPts]
-    points = np.zeros((len(beta)*2 - 2 - 2*cutTailPts, 3))
     
     if minTail_t_c > 0:
         cutIdx = -1 
@@ -126,7 +125,10 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0, minTail_t_c: f
         xl = xl[:cutIdx]
         yu = yu[:cutIdx]
         yl = yl[:cutIdx]
-    
+        
+    # print(len(xu))
+    points = np.zeros((len(xu)*2-1, 3))
+    # print(len(points))
     # for i, p in enumerate(points[:,0]):
     #     points[i, :] = np.array([xu[i]])
     
@@ -135,31 +137,11 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0, minTail_t_c: f
     # Set up the points on upper surface
     for i in range(0, len(xu)):
         points[i, :] = xu[i], yu[i], 0
-        
-    for i in range(1, len(xl)-1):
-        points[i+len(xu)-1] = xl[len(xl)-1-i], yl[len(yl)-1-i], 0
-        
-        
-    # Ensure all points abide by the minimum thickness criteria:
-        # for any given point, the distance between it and every point on the opposing curve
-        # must be at least minTail_tc * chord apart.
-    # if minTail_tc != None:
-    #     for i, p in enumerate(points):
-    #         if p[0] > 0.5*c: # in tail
-    #             # check two nearest points
-    #             # Distances between two points (total)
-    #             dx1 = points[i-1][0]-p[0]
-    #             dy1 = points[i-1][1]-p[1]
-                
-    #             dx2 = points[i+1][0]-p[0]
-    #             dy2 = points[i+1][1]-p[1]
-                
-    #             dist1 = np.sqrt(dx1**2 + dy1**2)
-    #             dist2 = np.sqrt(dx2**2 + dy2**2)
-                
-    #             if dist1 < minTail_tc*c or dist2 < minTail_tc
-        
-        
+    
+    # Note, going up to -1 so that we do not repeat point 0,0,0
+    for i in range(0, len(xl)-1):
+        points[i+len(xu), :] = xl[len(xl)-1-i], yl[len(yl)-1-i], 0
+      
     # reconnect to LE
     #points[-1, :] = xu[0], yu[0]
     
@@ -207,16 +189,17 @@ def generateGMSH_NACA4(geo, NACA4, c=1, dx=0, dy=0, dz=0, rot_ang=None,
         # Rotate each row point about its own (0,0,0) aka LE
         for r in range(0,len(pts[:,0])):
             pts[r,:] = CT.Rotate(pts[r,:], *rot_ang)
-        
-            
+             
             
     # make all the point objects
     for i in range(0, len(pts[:,0])):
         af_point_tags.append(geo.addPoint(pts[i, 0] + dx, pts[i,1] + dy, pts[i,2] + dz, mesh_size))
+        
     
     # Make all of the line objects 
     for i in range(0, len(af_point_tags) -1):
         af_line_tags.append(geo.addLine(af_point_tags[i], af_point_tags[i+1]))
+        
     # Need the final line to combine the first and last points
     af_line_tags.append(geo.addLine(af_point_tags[-1], af_point_tags[0]))    
         
@@ -230,13 +213,13 @@ def generateGMSH_NACA4(geo, NACA4, c=1, dx=0, dy=0, dz=0, rot_ang=None,
 if __name__=="__main__":
     plt.close()
     mint = (1/10) / 2.54
-    pts = generateNACA4("6406", c=2, numPoints=400)
-    pts2 = generateNACA4("6406", c=2, minTail_t_c= mint/2)
+    pts = generateNACA4("6406", c=1, minTail_t_c= mint/1, numPoints=121)
+    pts2 = generateNACA4("8406", c=2, minTail_t_c= mint/2)
     print("plotting")
     plt.figure()
     # plt.plot(xU, yU)
     # plt.plot(xL, yL)
-    # plt.plot(pts[:,0], pts[:,1])
+    plt.plot(pts[:,0], pts[:,1])
     plt.plot(pts2[:,0], pts2[:,1])
     plt.ylim([-0.6,0.6])
     plt.xlim([-0.1,2.1])

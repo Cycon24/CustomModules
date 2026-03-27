@@ -375,11 +375,7 @@ def updateFlow(cfg_params:dict):
     
     
     return cfg_params
-    
-    
-    
-    
-
+   
 
 # =============================================================================
 #  Testing
@@ -389,7 +385,7 @@ if __name__=="__main__":
     cfg_params["ITER"] = 20000 
     # msh_params["BladeAoA_root"] = 5.0 
     # msh_params['BladeAoA_tip'] = 10.0
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MedSwirl_01\Test03")
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test01")
     # msh_params["FileLocation"] = str(filepath)
     # generateMesh(msh_params, OpenGMSHVisual=True)
     runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)

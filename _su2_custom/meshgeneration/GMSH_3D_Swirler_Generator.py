@@ -309,6 +309,9 @@ def GenerateMesh3D(**kwargs):
     MinMeshSize = kwargs.get("MinMeshSize", 1e-6)
     MaxMeshSize = kwargs.get("MaxMeshSize", 0.05)
     
+    min_TE_t = kwargs.get("min_TE_t", 0)
+    cut_TE_pts = kwargs.get("cut_TE_pts", 0)
+    
     # =============================================================================
     #     Scaling for units
     # =============================================================================
@@ -326,20 +329,24 @@ def GenerateMesh3D(**kwargs):
     # Root Blade
     rotation_angles = [0, 0, -AoA_r]
     dxdydz = [L_Upstream, 0, r_hub - intersect_tol]  
+    
     afcurve_r, af_line_tags_r, af_point_tags_r = AG.generateGMSH_NACA4(
-        geo, NACA_r, dxdydz[0], dxdydz[1], dxdydz[2],
-        c=chord_r, numPoints=n_af_pts, rot_ang=rotation_angles,
-        mesh_size=af_mesh_size
+        geo, NACA_r, c=chord_r, 
+        dx=dxdydz[0], dy=dxdydz[1], dz=dxdydz[2], rot_ang=rotation_angles,
+        mesh_size=af_mesh_size,  numPoints=n_af_pts+21, 
+        cutTailPts=cut_TE_pts , minTail_t_c= min_TE_t/chord_r
     )
     gmsh.model.occ.synchronize()
     
     # Tip Blade
     rotation_angles = [0, 0, -AoA_t]
     dxdydz = [L_Upstream, 0, r_duct + intersect_tol] 
+    
     afcurve_t, af_line_tags_t, af_point_tags_t = AG.generateGMSH_NACA4(
-        geo, NACA_t, dxdydz[0], dxdydz[1], dxdydz[2],
-        c=chord_t, numPoints=n_af_pts, rot_ang=rotation_angles,
-        mesh_size=af_mesh_size
+        geo, NACA_t, c=chord_t,
+        dx=dxdydz[0], dy=dxdydz[1], dz=dxdydz[2], rot_ang=rotation_angles,
+        mesh_size=af_mesh_size, numPoints=n_af_pts, 
+        cutTailPts=cut_TE_pts , minTail_t_c= min_TE_t/chord_t
     )
     blade = gmsh.model.occ.addThruSections([afcurve_r, afcurve_t], makeSolid=True, makeRuled=True)[0][1]
     gmsh.model.occ.synchronize()
