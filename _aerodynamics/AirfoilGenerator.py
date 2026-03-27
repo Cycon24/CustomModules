@@ -126,6 +126,29 @@ def generateNACA4(NACA4, c=1, numPoints=100, cutTailPts: int = 0, minTail_t_c: f
         yu = yu[:cutIdx]
         yl = yl[:cutIdx]
         
+    # bring back the number of points by rounding off trailing edge
+    if len(xu) < numPoints:
+        n_add = numPoints - len(xu) 
+        center_x = (xu[-1] + xl[-1]) / 2
+        center_y = (yu[-1] + yl[-1]) / 2 
+        d = np.sqrt((xu[-1] - xl[-1])**2 + (yu[-1] - yl[-1])**2)
+        r = d / 2
+        
+        theta_u = np.arctan2( (yu[-1] - center_y) , (xu[-1] - center_x))
+        theta_l = np.arctan2( (yl[-1] - center_y) , (xl[-1] - center_x))
+        print(np.rad2deg(theta_u), np.rad2deg(theta_l))
+        theta_mid = (theta_u + theta_l)/2 
+        
+        thetas_u = np.linspace(theta_u, theta_mid, num=n_add,endpoint=False)
+        thetas_l = np.linspace(theta_l, theta_mid, num=n_add,endpoint=False)
+        
+        for i in range(0, n_add):
+            xu = np.append(xu, center_x + r*np.cos(thetas_u[i]))
+            xl = np.append(xl, center_x + r*np.cos(thetas_l[i]))
+            yu = np.append(yu, center_y + r*np.sin(thetas_u[i]))
+            yl = np.append(yl, center_y +r*np.sin(thetas_l[i]))
+        print(len(xu))
+        
     # print(len(xu))
     points = np.zeros((len(xu)*2-1, 3))
     # print(len(points))
@@ -213,7 +236,7 @@ def generateGMSH_NACA4(geo, NACA4, c=1, dx=0, dy=0, dz=0, rot_ang=None,
 if __name__=="__main__":
     plt.close()
     mint = (1/10) / 2.54
-    pts = generateNACA4("6406", c=1, minTail_t_c= mint/1, numPoints=121)
+    pts = generateNACA4("6406", c=1, minTail_t_c= mint/1)
     pts2 = generateNACA4("8406", c=2, minTail_t_c= mint/2)
     print("plotting")
     plt.figure()
@@ -221,8 +244,9 @@ if __name__=="__main__":
     # plt.plot(xL, yL)
     plt.plot(pts[:,0], pts[:,1])
     plt.plot(pts2[:,0], pts2[:,1])
-    plt.ylim([-0.6,0.6])
-    plt.xlim([-0.1,2.1])
+    # plt.ylim([-0.6,0.6])
+    # plt.xlim([-0.1,2.1])
+    plt.axis('equal')
     plt.grid()
     plt.show()
     
