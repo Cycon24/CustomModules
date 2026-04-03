@@ -67,9 +67,11 @@ def txt_to_dict(filename: str, filepath: str = "") -> dict:
     file_dict : dict
         Dictionary reconstructed from the config file.
     """
+    if type(filepath) == type(str):
+        filepath = Path(filepath)
 
-    filepath = filepath + "\\" if filepath != "" else ""
-    in_path = Path(filepath + filename)
+    in_path = Path(filepath / filename)
+    
 
     file_dict = {}
 

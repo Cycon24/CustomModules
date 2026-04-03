@@ -9,11 +9,12 @@ import pandas as pd
 from scipy.spatial import Delaunay, cKDTree
 from scipy.spatial.distance import cdist
 import _aerodynamics.GasDynamics as GD
+from pathlib import Path
 
 
 
-def import_csv_to_df(filename:str, filepath:str):
-    df = pd.read_csv(filepath+"\\" +  filename)
+def import_csv_to_df(filename:str, filepath:Path):
+    df = pd.read_csv(filepath / filename)
     return df
 
 def extract_points_in_plane(plane_x:float, dataframe, tol:float=1e-6):
@@ -41,7 +42,7 @@ def extract_points_in_plane(plane_x:float, dataframe, tol:float=1e-6):
     new_df = dataframe[(abs(dataframe['x']-plane_x)) < tol]
     return new_df
 
-def generate_plane_csv(plane_x:float, filename:str, filepath:str, plane_filename:str="plane") -> None:
+def generate_plane_csv(plane_x:float, filename:str, filepath:Path, plane_filename:str="plane") -> None:
     '''
     Save the plane pulled from plane_x to a csv file.
 
@@ -64,7 +65,7 @@ def generate_plane_csv(plane_x:float, filename:str, filepath:str, plane_filename
     '''
     extract_points_in_plane(plane_x,
                             import_csv_to_df(filename, filepath)
-                            ).save_csv(filepath + "\\" + plane_filename + ".csv", index=False)
+                            ).save_csv(filepath / plane_filename + ".csv", index=False)
     return None
     
 
@@ -368,9 +369,10 @@ def swirl_number_yz(
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
+    plt.close("all")
     
     filename = "entire_surface_restart.csv"
-    filelocation = r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test01"
+    filelocation = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test02")
     
     imported = import_csv_to_df(filename, filelocation)
     inlet = extract_points_in_plane(0, imported, tol=0.01e-3)
@@ -402,7 +404,7 @@ if __name__=="__main__":
     print(r"- $\pi_{max}$" + f" = {np.max(pi_s):.4f} ")
     print(f"- SN     = {SN:.4f}")
     print(r"- $\alpha_{SN}$" + f"     = {swirl_angle(SN):.4f}" + r"$^o$")
-    print(r"- SN_{TE}   = "+f"{SN_TE:.4f}")
+    print(r"- $SN_{TE}$   = "+f"{SN_TE:.4f}")
     print(r"- $\alpha_{SN, TE}$" + f"     = {swirl_angle(SN_TE):.4f}" + r"$^o$")
     # plt.figure()
     # plt.scatter(inlet["y"], inlet["z"])

@@ -333,7 +333,7 @@ def GenerateMesh3D(**kwargs):
     afcurve_r, af_line_tags_r, af_point_tags_r = AG.generateGMSH_NACA4(
         geo, NACA_r, c=chord_r, 
         dx=dxdydz[0], dy=dxdydz[1], dz=dxdydz[2], rot_ang=rotation_angles,
-        mesh_size=af_mesh_size,  numPoints=n_af_pts+21, 
+        mesh_size=af_mesh_size,  numPoints=n_af_pts, 
         cutTailPts=cut_TE_pts , minTail_t_c= min_TE_t/chord_r
     )
     gmsh.model.occ.synchronize()

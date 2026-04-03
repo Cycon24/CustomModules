@@ -382,13 +382,31 @@ def updateFlow(cfg_params:dict):
 # =============================================================================
 if __name__=="__main__":
     msh_params, cfg_params, flow_params = importBaseParams_filtered("RANS", "3D")
-    cfg_params["ITER"] = 20000 
-    # msh_params["BladeAoA_root"] = 5.0 
-    # msh_params['BladeAoA_tip'] = 10.0
-    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test01")
-    # msh_params["FileLocation"] = str(filepath)
-    # generateMesh(msh_params, OpenGMSHVisual=True)
-    runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params)
+    cfg_params["ITER"] = 10000 
+  
+    
+  
+    filepath=Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test06")
+    
+    USE_DEFAULT_MESH = False
+    default_mesh_name = "MedSwirl_CutTE_Refined04"
+    default_mesh_location = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\Meshes")
+    
+    # For saving a default mesh
+    msh_params["FileLocation"] = str(default_mesh_location)
+    msh_params["MeshName"] = str(default_mesh_name)
+    su2cfg.dict_to_cfg(msh_params, default_mesh_name+".txt", default_mesh_location)
+    generateMesh(msh_params, OpenGMSHVisual=True)
+    
+    
+    
+    
+    # runSinglePoint_CFD(cfg_params, msh_params, filepath, flow_params=flow_params,
+    #                    USE_DEFAULT_MESH=USE_DEFAULT_MESH,
+    #                    default_mesh_location=default_mesh_location,
+    #                    default_mesh_name=default_mesh_name)
+    
+    
     # runParameterSweep_CFD({"AoA_rt": [[5.0, 12.0], [5.0, 16.0], [5.0, 20.0]]}, cfg_params, msh_params, filepath)
     
     # processpParamData(filepath)

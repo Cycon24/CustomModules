@@ -9,7 +9,7 @@ FlowConditions:
 # Cold flow: T=293.15K P=107.5kPa
 # Heated float: T=922.22K P = 145.5kPa
     Inlet_Static_Temperature:       922.22 #293.15 #922.22 # K or 1660 R
-    Inlet_Static_Pressure: !!float  126.2e3  # Pa or lbf/ft^2
+    Inlet_Static_Pressure: !!float  128.5e3  # Pa or lbf/ft^2
     # Inlet_Target_Mach:              0.30    # Mach number
     Inlet_Target_mdot:              0.5    # mdot, kg/s or slug/s         
     Back_Pressure: !!float          101.325e3 # Pa or lbf/ft^2

@@ -14,6 +14,7 @@ from typing import Optional, Dict, Any
 
 # Local
 import processing_tools as proc 
+import process_mass_flow as proc_flow
 
 CFG_DEF_NAME = "post3d_config.yaml"
 
@@ -499,6 +500,55 @@ def plot_radial_averages(
 #     else:
 #         print("[INFO] 3D Processor complete.")
 
+def process_flow_values(param_dir: Path,
+                        print_info:bool = True,
+                        save_info:bool = True):
+    filename = "entire_surface_restart.csv"
+    
+    imported    = proc_flow.import_csv_to_df(filename, param_dir)
+    inlet       = proc_flow.extract_points_in_plane(0, imported, tol=0.01e-3)
+    outlet      = proc_flow.extract_points_in_plane(17*2.54/100, imported, tol=0.01e-3)
+    TE_slice    = proc_flow.extract_points_in_plane(8 *2.54/100, imported, tol=0.10e-3)
+    
+    mdot, diag      = proc_flow.mass_flow_rate_yz(inlet, return_diagnostics=True, gc=1)
+    mdot_o, diag_o  = proc_flow.mass_flow_rate_yz(outlet, return_diagnostics=True, gc=1)
+    # R_refs = np.linspace(0.2*2.54/100, 2.0*2.54/100, 100)
+    # SNs = []
+    # for R_ref in R_refs:
+    SN, diag_SN         = proc_flow.swirl_number_yz(outlet, return_diagnostics=True, R_ref=None) #2.0*2.54/100)
+    SN_TE, diag_SN_TE   = proc_flow.swirl_number_yz(TE_slice, return_diagnostics=True, R_ref=None) #2.0*2.54/100)
+   
+        # SNs.append(SN)
+    Ptots_i, inlet =  proc_flow.total_pressure_slice(inlet, 1.4)
+    Ptots_o, outlet =  proc_flow.total_pressure_slice(outlet, 1.4)
+    dPtots = Ptots_o - Ptots_i 
+    pi_s = Ptots_o / Ptots_i
+    pi_avg = np.average(pi_s)
+    
+    dmdot = 6*(mdot_o - mdot)
+    # print(f"mdot_s = {mdot:.4f} lbm/s")
+    # print(f"mdot_t = {6*mdot:.4f} lbm/s")
+    
+    
+    lines = [
+    r"- $\dot{m}$" + f" = {6*mdot:.4f} kg/s",
+    r"- $\Delta\dot{m}$" + f" = {dmdot:.4f} kg/s",
+    r"- $\pi_{avg}$" + f" = {pi_avg:.4f}",
+    r"- $\pi_{min}$" + f" = {np.min(pi_s):.4f}",
+    r"- $\pi_{max}$" + f" = {np.max(pi_s):.4f}",
+    f"- SN     = {SN:.4f}",
+    r"- $\alpha_{SN}$" + f"     = {proc_flow.swirl_angle(SN):.4f}" + r"$^o$",
+    r"- $SN_{TE}$   = " + f"{SN_TE:.4f}",
+    r"- $\alpha_{SN, TE}$" + f"     = {proc_flow.swirl_angle(SN_TE):.4f}" + r"$^o$"
+    ]
+    print(f"[Info] Flow Results calculated for {param_dir.name}")
+    with open(param_dir / "Flow_Results.txt", "w") as f:
+        for line in lines:
+            if print_info: print(line)
+            if save_info: f.write(line + "\n")
+    
+    return None
+
 def process_single_run(param_dir: Path, 
                        cfg_path: Path | None = None,
                        units_path: Path | None = None,
@@ -509,6 +559,7 @@ def process_single_run(param_dir: Path,
         units_cfg = None
     
     print(f"[Info] Beginning processing for {param_dir.name}")
+    process_flow_values(param_dir)
     extract_probe_surfaces(param_dir, cfg=None, cfg_path=cfg_path)
     plot_residuals_history(param_dir)
     plot_aero_coefficients(param_dir)
@@ -517,8 +568,10 @@ def process_single_run(param_dir: Path,
     return None
 
 
+
+
 if __name__=="__main__":
-        param_dir = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test01")
+        param_dir = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test05")
         # extract_probe_surfaces(param_dir, cfg=None)
         # plot_residuals_history(param_dir)
         # plot_aero_coefficients(param_dir)

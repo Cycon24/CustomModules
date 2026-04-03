@@ -14,9 +14,9 @@ General:
     FileType: "BOTH"        # SU2, MSH, or BOTH
     UnitsScaleFactor: 0.0254  #0.0254     # 1 for in, 2.54 for cm, 0.0254 for m
     
-    GenPointSize: 0.1 #0.05       # element size at each defined point
-    AF_pointSize: 0 #0.01      # float, 0 to be overwritten by GenPointSize
-    AF_numPoints: 100       # int, number of points along the airfoil curve
+    GenPointSize: 0.05 #0.05       # element size at each defined point
+    AF_pointSize: 0.01      # float, 0 to be overwritten by GenPointSize
+    AF_numPoints: 200       # int, number of points along the airfoil curve
     min_TE_t:       0.0394    # float, in (1mm=0.03937 in)
     cut_TE_pts:     0 # int
     
@@ -50,7 +50,7 @@ mesh2D:
 # 3D Parameters    
 mesh3D: 
     MinMeshSize: !!float 1e-6       # 3D mesh size control?
-    MaxMeshSize:         0.05  #05       # ^
+    MaxMeshSize:         0.02  #05       # ^
     
     # Airfoil:
     NACA_root: "6406"   # root (innet) 4-digit airfoil

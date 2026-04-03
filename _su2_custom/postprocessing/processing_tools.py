@@ -187,15 +187,15 @@ def read_surface_csv(
     have_v = all(c in df.columns for c in ["Vx", "Vy", "Vz"])
     have_m = all(c in df.columns for c in ["Mx", "My", "Mz"]) and ("rho" in df.columns)
 
-    if not have_v and have_m:
-        rho = df["rho"].replace(0.0, np.nan)
-        df["Vx"] = df.get("Vx", df["Mx"] / rho)
-        df["Vy"] = df.get("Vy", df["My"] / rho)
-        df["Vz"] = df.get("Vz", df["Mz"] / rho)
-    elif not have_v and not have_m:
-        raise ValueError(
-            "Velocity components not present and cannot be derived (missing momentum or density)."
-        )
+    # if not have_v and have_m:
+    #     rho = df["rho"].replace(0.0, np.nan)
+    #     df["Vx"] = df.get("Vx", df["Mx"] / rho)
+    #     df["Vy"] = df.get("Vy", df["My"] / rho)
+    #     df["Vz"] = df.get("Vz", df["Mz"] / rho)
+    # elif not have_v and not have_m:
+    #     raise ValueError(
+    #         "Velocity components not present and cannot be derived (missing momentum or density)."
+        # )
         
    
     # NOTE: exports in ft xyz still
