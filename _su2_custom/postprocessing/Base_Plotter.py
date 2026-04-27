@@ -571,7 +571,7 @@ def process_single_run(param_dir: Path,
 
 
 if __name__=="__main__":
-        param_dir = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test05")
+        param_dir = Path(r"C:\Users\BriceM\Documents\SU2 CFD Data\3D_Tests\MinThickTests\Test06")
         # extract_probe_surfaces(param_dir, cfg=None)
         # plot_residuals_history(param_dir)
         # plot_aero_coefficients(param_dir)
