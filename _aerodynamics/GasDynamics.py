@@ -1352,6 +1352,36 @@ def OBS_Pt2_Pt1(Mach1: float, Beta: float, Theta: float, Gamma: float=1.4, retur
     if returnMach2:
         return Pt2_Pt1, M2
     return Pt2_Pt1
+
+def OBS_max_turn_angles(Mach:float, Gamma:float=1.4):
+    '''
+    Calculates the max turn angle (theta) for a particular free-stream Mach number
+
+    Parameters
+    ----------
+    Mach : float
+        DESCRIPTION.
+    Gamma : float, optional
+        DESCRIPTION. The default is 1.4.
+
+    Returns
+    -------
+    dict
+        "Theta_max": float, degres
+        "Beta_max": float, degrees
+
+    '''
+    
+    
+    y = Gamma
+    sin2_beta_thmax = ((y + 1)/(4*y)) * (1 - 4 / ((y+1)*Mach**2) + np.sqrt(1 + (8*(y-1))/((y+1)*Mach**2) + 16 / ((y+1)*Mach**4))) 
+    beta_thmax = np.arcsin(np.sqrt(sin2_beta_thmax))
+    beta_max = np.rad2deg(beta_thmax) 
+    
+    tan_thmax = (sin2_beta_thmax * Mach**2 - 1) * (1/np.tan(beta_thmax)) / (1 + (y+1)*(Mach**2)/2 - sin2_beta_thmax*Mach**2)
+    th_max = np.arctan(tan_thmax)
+    theta_max = np.rad2deg(th_max)
+    return {"Theta_max": theta_max, "Beta_max": beta_max}
 # __________________________________________
 
 # =============================================================================
